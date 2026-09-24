@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rey Del Balon - Catálogo de Productos</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Encabezado y Navegación -->
+    <header class="header">
+        <div class="logo">
+            <a href="index.html">⚽ <span>Rey Del Balon</span></a>
+        </div>
+        <nav class="nav">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="productos.html" class="active">Productos</a></li>
+                <li><a href="nosotros.html">Nosotros</a></li>
+                <li><a href="blogs.html">Blogs</a></li>
+                <li><a href="contacto.html">Contacto</a></li>
+            </ul>
+        </nav>
+        <div class="cart-status" id="header-user-status">
+            <a href="carrito.html">🛒 Carrito (<span id="cart-count">0</span>)</a>
+            <a href="login.html" class="btn-login">Iniciar Sesión</a>
+        </div>
+    </header>
+
+    <!-- Catálogo de Productos -->
+    <main class="container">
+        <h2>Catálogo de Productos de Fútbol</h2>
+        <div id="grid-productos" class="product-grid">
+            <!-- Los productos se cargan automáticamente -->
+        </div>
+    </main>
+
+    <!-- Pie de Página -->
+    <footer class="footer">
+        <p>&copy; 2026 Rey Del Balon - Todos los derechos reservados.</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/productos.js"></script>
+    <script src="js/carrito.js"></script>
+    <script src="js/login.js"></script>
+</body>
+</html>

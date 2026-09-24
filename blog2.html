@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog #2 - Rey Del Balon</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="logo"><a href="index.html">⚽ <span>Rey Del Balon</span></a></div>
+        <nav class="nav">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="productos.html">Productos</a></li>
+                <li><a href="nosotros.html">Nosotros</a></li>
+                <li><a href="blogs.html" class="active">Blogs</a></li>
+                <li><a href="contacto.html">Contacto</a></li>
+            </ul>
+        </nav>
+        <div class="cart-status" id="header-user-status">
+            <a href="carrito.html">🛒 Carrito (<span id="cart-count">0</span>)</a>
+            <a href="login.html" class="btn-login">Iniciar Sesión</a>
+        </div>
+    </header>
+
+    <main class="container" style="max-width: 800px;">
+        <h2>¿Por qué la camiseta de Chile es roja?</h2>
+        <div class="auth-card-page" style="max-width: 100%; text-align: center;">
+            
+            <!-- Contenedor ajustado para mostrar la camiseta completa -->
+            <div style="background-color: #f8fafc; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; display: flex; justify-content: center;">
+                <img src="https://chinchileproducts.com/cdn/shop/files/Federacion-de-Futbol-de-Chile-Jersey.webp?v=1753385922&width=1946" 
+                     alt="Camiseta Selección Chilena" 
+                     style="max-width: 100%; max-height: 420px; height: auto; object-fit: contain; border-radius: 6px;">
+            </div>
+
+            <p style="text-align: left; line-height: 1.7; color: #334155;">
+                Originalmente, la selección chilena vestía de blanco. No fue hasta la década de 1940 que se adoptó definitivamente la clásica combinación tricolor: camiseta roja, pantalón azul y medias blancas, reflejando el espíritu de la bandera nacional.
+            </p>
+            
+            <div style="text-align: left; margin-top: 1.5rem;">
+                <a href="blogs.html" style="font-weight: 700; color: var(--accent);">&larr; Volver a Blogs</a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer"><p>&copy; 2026 Rey Del Balon - Todos los derechos reservados.</p></footer>
+    
+    <script src="js/productos.js"></script>
+    <script src="js/carrito.js"></script>
+    <script src="js/login.js"></script>
+</body>
+</html>

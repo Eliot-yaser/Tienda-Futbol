@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrito de Compras - Rey Del Balon</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <a href="index.html">⚽ <span>Rey Del Balon</span></a>
+        </div>
+        <nav class="nav">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="productos.html">Productos</a></li>
+                <li><a href="nosotros.html">Nosotros</a></li>
+                <li><a href="blogs.html">Blogs</a></li>
+                <li><a href="contacto.html">Contacto</a></li>
+            </ul>
+        </nav>
+        <div class="cart-status" id="header-user-status">
+            <a href="carrito.html" class="active">🛒 Carrito (<span id="cart-count">0</span>)</a>
+            <a href="login.html" class="btn-login">Iniciar Sesión</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <h1>Tu Carrito de Compras</h1>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Imagen</th>
+                    <th>Producto</th>
+                    <th>Precio</th>
+                    <th>Cantidad</th>
+                    <th>Subtotal</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="lista-carrito">
+                <!-- Se genera dinámicamente con carrito.js -->
+            </tbody>
+        </table>
+
+        <div style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: center;">
+            <button onclick="vaciarCarrito()" class="btn-add" style="width: auto; background-color: var(--accent);">Vaciar Carrito</button>
+            <h2>Total: <span id="total-carrito">$0</span></h2>
+        </div>
+
+        <div style="margin-top: 1.5rem;">
+            <a href="productos.html" style="font-weight: bold;">&larr; Volver a la tienda</a>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 Rey Del Balon - Todos los derechos reservados.</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/productos.js"></script>
+    <script src="js/carrito.js"></script>
+    <script src="js/login.js"></script>
+</body>
+</html>
