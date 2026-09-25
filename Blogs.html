@@ -12,6 +12,7 @@
         <div class="logo">
             <a href="index.html">⚽ <span>Rey Del Balon</span></a>
         </div>
+
         <nav class="nav">
             <ul>
                 <li><a href="index.html">Home</a></li>
@@ -21,8 +22,11 @@
                 <li><a href="contacto.html">Contacto</a></li>
             </ul>
         </nav>
+
         <div class="cart-status" id="header-user-status">
-            <a href="carrito.html">🛒 Carrito (<span id="cart-count">0</span>)</a>
+            <a href="carrito.html">
+                🛒 Carrito (<span id="cart-count">0</span>)
+            </a>
             <a href="login.html" class="btn-login">Iniciar Sesión</a>
         </div>
     </header>
@@ -30,26 +34,54 @@
     <main class="container">
         <h2>Noticias e Historias Curiosas</h2>
 
-        <div style="display: flex; flex-direction: column; gap: 2rem; max-width: 900px; margin: 0 auto;">
-            <!-- Blog Card 1 -->
-            <div class="product-card" style="display: flex; flex-direction: row; text-align: left; gap: 1.5rem; align-items: center; padding: 1.5rem;">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnS03_Dd_dwJzGs6J7v_QJ1sR_ChBzAtKNknYepVfj3XG4LdeRAEoDZlQ&s=10" alt="Blog 1" style="width: 200px; height: 140px; object-fit: cover; border-radius: 8px;">
-                <div>
-                    <h3 style="font-size: 1.4rem;">Caso Curioso #1: La Evolución de los Balones de Fútbol</h3>
-                    <p style="color: #64748b; margin: 0.5rem 0 1rem 0;">Descubre cómo pasamos de balones de cuero pesado que absorbían agua a esferas termoselladas de alta precisión tecnológica.</p>
-                    <a href="blog1.html" class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Ver Caso Completo &rarr;</a>
-                </div>
-            </div>
+        <div class="blogs-list">
 
-            <!-- Blog Card 2 -->
-            <div class="product-card" style="display: flex; flex-direction: row; text-align: left; gap: 1.5rem; align-items: center; padding: 1.5rem;">
-                <img src="https://chinchileproducts.com/cdn/shop/files/Federacion-de-Futbol-de-Chile-Jersey.webp?v=1753385922&width=1946" alt="Blog 2" style="width: 200px; height: 140px; object-fit: cover; border-radius: 8px;">
-                <div>
-                    <h3 style="font-size: 1.4rem;">Caso Curioso #2: ¿Por qué la camiseta de Chile es roja?</h3>
-                    <p style="color: #64748b; margin: 0.5rem 0 1rem 0;">Conoce los orígenes de la indumentaria de 'La Roja' y la historia detrás de sus colores patrios en torneos internacionales.</p>
-                    <a href="blog2.html" class="btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Ver Caso Completo &rarr;</a>
+            <!-- Blog 1 -->
+            <article class="blog-card">
+                <img
+                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnS03_Dd_dwJzGs6J7v_QJ1sR_ChBzAtKNknYepVfj3XG4LdeRAEoDZlQ&s=10"
+                    alt="Evolución de los balones de fútbol"
+                    class="blog-card-img">
+
+                <div class="blog-card-content">
+                    <h3>
+                        Caso Curioso #1: La Evolución de los Balones de Fútbol
+                    </h3>
+
+                    <p>
+                        Descubre cómo pasamos de balones de cuero pesado que absorbían agua
+                        a esferas termoselladas de alta precisión tecnológica.
+                    </p>
+
+                    <a href="blog1.html" class="btn-primary blog-btn">
+                        Ver Caso Completo &rarr;
+                    </a>
                 </div>
-            </div>
+            </article>
+
+            <!-- Blog 2 -->
+            <article class="blog-card">
+                <img
+                    src="https://chinchileproducts.com/cdn/shop/files/Federacion-de-Futbol-de-Chile-Jersey.webp?v=1753385922&width=1946"
+                    alt="Camiseta roja de la selección chilena"
+                    class="blog-card-img">
+
+                <div class="blog-card-content">
+                    <h3>
+                        Caso Curioso #2: ¿Por qué la camiseta de Chile es roja?
+                    </h3>
+
+                    <p>
+                        Conoce los orígenes de la indumentaria de 'La Roja' y la historia
+                        detrás de sus colores patrios en torneos internacionales.
+                    </p>
+
+                    <a href="blog2.html" class="btn-primary blog-btn">
+                        Ver Caso Completo &rarr;
+                    </a>
+                </div>
+            </article>
+
         </div>
     </main>
 
@@ -60,5 +92,6 @@
     <script src="js/productos.js"></script>
     <script src="js/carrito.js"></script>
     <script src="js/login.js"></script>
+
 </body>
 </html>

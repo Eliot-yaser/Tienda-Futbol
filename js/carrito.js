@@ -1,4 +1,4 @@
-// Variable para la talla activa en el modal
+// Variable para la talla seleccionada del producto
 let tallaSeleccionadaActual = "";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -10,6 +10,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (document.getElementById("lista-carrito")) {
         renderizarCarrito();
+    }
+    if (document.getElementById("detalle-producto")) {
+    renderizarDetalleProducto();
     }
 });
 
@@ -89,32 +92,51 @@ function renderizarProductos() {
         tarjeta.classList.add("product-card");
         
         // Al hacer clic en cualquier parte de la tarjeta abre el detalle
-        tarjeta.onclick = () => abrirModalProducto(prod.codigo);
+        tarjeta.onclick = () => {
+            window.location.href = `detalle-producto.html?codigo=${prod.codigo}`;
+        };
 
         tarjeta.innerHTML = `
             <img src="${prod.imagen || ''}" alt="${prod.nombre || 'Producto'}" class="product-img">
             <h3>${prod.nombre || 'Producto'}</h3>
             <p class="category">${prod.categoria || 'General'}</p>
             <p class="price">$${precio.toLocaleString("es-CL")}</p>
-            <button onclick="event.stopPropagation(); abrirModalProducto('${prod.codigo}')" class="btn-add">Ver Detalle / Tallas</button>
+            <button onclick="event.stopPropagation(); window.location.href='detalle-producto.html?codigo=${prod.codigo}'" class="btn-add">
+                Ver Detalle
+            </button>
         `;
         contenedor.appendChild(tarjeta);
     });
 }
 
-// Ventana Emergente con Descripción y Tallas
-function abrirModalProducto(codigo) {
+function renderizarDetalleProducto() {
+    const contenedor = document.getElementById("detalle-producto");
+    if (!contenedor) return;
+
+    const parametros = new URLSearchParams(window.location.search);
+    const codigo = parametros.get("codigo");
+
     const productos = obtenerListaProductos();
     const prod = productos.find(p => p.codigo === codigo);
-    if (!prod) return;
 
-    // Detectar tallas disponibles
+    if (!prod) {
+        contenedor.innerHTML = `
+            <div class="detalle-error">
+                <h2>Producto no encontrado</h2>
+                <a href="productos.html" class="detalle-volver">← Volver a Productos</a>
+            </div>
+        `;
+        return;
+    }
+
     let tallas = prod.tallas;
+
     if (!tallas || tallas.length === 0) {
-        const cat = (prod.categoria || "").toUpperCase();
-        if (cat.includes("CALZADO") || cat.includes("ZAPAT")) {
+        const categoria = (prod.categoria || "").toUpperCase();
+
+        if (categoria.includes("CALZADO") || categoria.includes("ZAPAT")) {
             tallas = ["39", "40", "41", "42", "43"];
-        } else if (cat.includes("ACCESORIO") || cat.includes("BALON")) {
+        } else if (categoria.includes("ACCESORIO") || categoria.includes("BALON")) {
             tallas = ["Talla Única"];
         } else {
             tallas = ["S", "M", "L", "XL"];
@@ -123,57 +145,143 @@ function abrirModalProducto(codigo) {
 
     tallaSeleccionadaActual = tallas[0];
 
-    // Limpiar modal previo si existiera
-    cerrarModal();
+    let relacionados = productos.filter(
+        p =>
+            p.codigo !== prod.codigo &&
+            (p.categoria || "").toLowerCase() ===
+            (prod.categoria || "").toLowerCase()
+    );
 
-    const modal = document.createElement("div");
-    modal.className = "modal-overlay";
-    modal.id = "modal-producto";
-    modal.onclick = (e) => { if (e.target === modal) cerrarModal(); };
+    if (relacionados.length < 4) {
+        const adicionales = productos.filter(
+            p =>
+                p.codigo !== prod.codigo &&
+                !relacionados.some(r => r.codigo === p.codigo)
+        );
 
-    modal.innerHTML = `
-        <div class="modal-container">
-            <button class="modal-close-btn" onclick="cerrarModal()">✕</button>
-            <div class="modal-image-col">
-                <img src="${prod.imagen || ''}" alt="${prod.nombre}">
-            </div>
-            <div class="modal-info-col">
-                <div>
-                    <span class="modal-category">${prod.categoria || 'General'}</span>
-                    <h2 class="modal-title">${prod.nombre}</h2>
-                    <div class="modal-price">$${Number(prod.precio).toLocaleString("es-CL")}</div>
-                    <p class="modal-description">${prod.descripcion || 'Producto oficial de alto rendimiento deportivo.'}</p>
-                    
-                    <div class="modal-sizes-title">Seleccionar Talla:</div>
-                    <div class="modal-sizes-grid">
-                        ${tallas.map((talla, index) => `
-                            <button class="btn-size ${index === 0 ? 'active' : ''}" onclick="seleccionarTalla(this, '${talla}')">${talla}</button>
-                        `).join('')}
-                    </div>
+        relacionados = relacionados.concat(adicionales);
+    }
+
+    relacionados = relacionados.slice(0, 4);
+
+    contenedor.innerHTML = `
+        <section class="detalle-principal">
+
+            <div class="modal-container">
+
+                <div class="modal-image-col">
+                    <img src="${prod.imagen || ""}" alt="${prod.nombre || "Producto"}">
                 </div>
 
-                <button class="btn-modal-add" onclick="agregarAlCarritoConTalla('${prod.codigo}')">
-                    🛒 Agregar al Carrito
-                </button>
-            </div>
-        </div>
-    `;
+                <div class="modal-info-col">
 
-    document.body.appendChild(modal);
+                    <div>
+                        <span class="modal-category">
+                            ${prod.categoria || "General"}
+                        </span>
+
+                        <h1 class="modal-title">
+                            ${prod.nombre || "Producto"}
+                        </h1>
+
+                        <div class="modal-price">
+                            $${Number(prod.precio || 0).toLocaleString("es-CL")}
+                        </div>
+
+                        <p class="modal-description">
+                            ${prod.descripcion || "Sin descripción disponible."}
+                        </p>
+
+                        <div class="modal-sizes-title">
+                            Seleccionar Talla:
+                        </div>
+
+                        <div class="modal-sizes-grid">
+                            ${tallas.map((talla, index) => `
+                                <button
+                                    class="btn-size ${index === 0 ? "active" : ""}"
+                                    onclick="seleccionarTalla(this, '${talla}')">
+
+                                    ${talla}
+
+                                </button>
+                            `).join("")}
+                        </div>
+                    </div>
+
+                    <button
+                        class="btn-modal-add"
+                        onclick="agregarAlCarritoConTalla('${prod.codigo}')">
+
+                        🛒 Agregar al Carrito
+
+                    </button>
+
+                    <a href="productos.html" class="detalle-volver">
+                        ← Volver a Productos
+                    </a>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <section class="productos-relacionados">
+
+            <h2>Productos relacionados</h2>
+
+            <div class="related-grid">
+
+                ${relacionados.map(rel => `
+                    <article
+                        class="related-card"
+                        onclick="window.location.href='detalle-producto.html?codigo=${rel.codigo}'">
+
+                        <img
+                            src="${rel.imagen || ""}"
+                            alt="${rel.nombre || "Producto"}">
+
+                        <div class="related-card-info">
+
+                            <span class="related-category">
+                                ${rel.categoria || "General"}
+                            </span>
+
+                            <h3>
+                                ${rel.nombre || "Producto"}
+                            </h3>
+
+                            <p class="related-price">
+                                $${Number(rel.precio || 0).toLocaleString("es-CL")}
+                            </p>
+
+                            <button
+                                class="btn-related"
+                                onclick="event.stopPropagation(); window.location.href='detalle-producto.html?codigo=${rel.codigo}'">
+
+                                Ver detalle
+
+                            </button>
+
+                        </div>
+
+                    </article>
+                `).join("")}
+
+            </div>
+
+        </section>
+    `;
 }
 
-// Cambiar la talla activa en el modal
+
 function seleccionarTalla(boton, talla) {
     document.querySelectorAll('.btn-size').forEach(b => b.classList.remove('active'));
     boton.classList.add('active');
     tallaSeleccionadaActual = talla;
 }
 
-// Cerrar ventana modal
-function cerrarModal() {
-    const modal = document.getElementById("modal-producto");
-    if (modal) modal.remove();
-}
 
 // Agregar producto con talla al carrito
 function agregarAlCarritoConTalla(codigo) {
@@ -202,7 +310,6 @@ function agregarAlCarritoConTalla(codigo) {
 
     localStorage.setItem("carrito", JSON.stringify(carrito));
     actualizarContadorCarrito();
-    cerrarModal();
 
     // Muestra la notificación verde superior derecha
     mostrarNotificacionToast(nombreConTalla);

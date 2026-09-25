@@ -50,6 +50,9 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!password) {
                 mostrarError("error-login-password", "La contraseña es requerida.");
                 esValido = false;
+            } else if (password.length < 4 || password.length > 10) {
+                mostrarError("error-login-password", "La contraseña debe tener entre 4 y 10 caracteres.");
+                esValido = false;
             }
 
             if (!esValido) return;
@@ -120,7 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 mostrarError("error-reg-email", "El correo es requerido.");
                 esValido = false;
             } else if (!validarDominioCorreo(email)) {
-                mostrarError("error-reg-email", "Solo correos @duoc.cl, @profesor.duoc.cl, @duocuc.cl y @gmail.com");
+                mostrarError("error-reg-email", "Solo correos @duoc.cl, @profesor.duoc.cl y @gmail.com");
                 esValido = false;
             }
 
@@ -204,7 +207,7 @@ function inicializarBaseUsuarios() {
                 run: "19011022K",
                 nombre: "Isaac",
                 apellidos: "Arias",
-                email: "el.armijo@duocuc.cl",
+                email: "el.armijo@duoc.cl",
                 pass: "1234",
                 rol: "Cliente"
             },
@@ -230,7 +233,7 @@ function getInputValue(id) {
 }
 
 function validarDominioCorreo(correo) {
-    const dominios = ["@duoc.cl", "@profesor.duoc.cl", "@gmail.com", "@duocuc.cl"];
+    const dominios = ["@duoc.cl", "@profesor.duoc.cl", "@gmail.com"];
     return dominios.some(d => correo.toLowerCase().endsWith(d));
 }
 

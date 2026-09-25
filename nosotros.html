@@ -12,6 +12,7 @@
         <div class="logo">
             <a href="index.html">⚽ <span>Rey Del Balon</span></a>
         </div>
+
         <nav class="nav">
             <ul>
                 <li><a href="index.html">Home</a></li>
@@ -21,6 +22,7 @@
                 <li><a href="contacto.html">Contacto</a></li>
             </ul>
         </nav>
+
         <div class="cart-status" id="header-user-status">
             <a href="carrito.html">🛒 Carrito (<span id="cart-count">0</span>)</a>
             <a href="login.html" class="btn-login">Iniciar Sesión</a>
@@ -29,18 +31,31 @@
 
     <main class="container">
         <h2>Sobre Nosotros</h2>
-        <div class="auth-card-page" style="max-width: 800px; margin: 0 auto;">
-            <h3 style="color: var(--accent); margin-bottom: 1rem;">Nuestra Historia y Pasión</h3>
-            <p style="margin-bottom: 1.5rem;">
+
+        <div class="about-card">
+
+            <h3 class="about-title">Nuestra Historia y Pasión</h3>
+
+            <p class="about-text">
                 <strong>Rey Del Balon</strong> nació en 2026 con la misión de acercar la indumentaria de fútbol profesional a todos los apasionados del deporte. Nos especializamos en distribuir camisetas oficiales, calzado de alto rendimiento y accesorios deportivos de la más alta calidad.
             </p>
 
-            <h3 style="color: var(--accent); margin-bottom: 1rem;">Equipo de Desarrolladores</h3>
-            <p style="margin-bottom: 1rem;">Este proyecto fue desarrollado por el equipo de informática de Duoc UC:</p>
-            <ul style="list-style: disc; padding-left: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
-                <li><strong>Eliot Armijo</strong> - Desarrollador Frontend / Integración JavaScript</li>
-                <li><strong>Isaac Arias</strong> - Desarrollador Frontend / Integración JavaScript</li>
+            <h3 class="about-title">Equipo de Desarrolladores</h3>
+
+            <p class="about-text">
+                Este proyecto fue desarrollado por el equipo de informática de Duoc UC:
+            </p>
+
+            <ul class="developers-list">
+                <li>
+                    <strong>Eliot Armijo</strong> - Desarrollador Frontend / Integración JavaScript
+                </li>
+
+                <li>
+                    <strong>Isaac Arias</strong> - Desarrollador Frontend / Integración JavaScript
+                </li>
             </ul>
+
         </div>
     </main>
 
@@ -51,5 +66,6 @@
     <script src="js/productos.js"></script>
     <script src="js/carrito.js"></script>
     <script src="js/login.js"></script>
+
 </body>
 </html>

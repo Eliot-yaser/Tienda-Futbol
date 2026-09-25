@@ -270,24 +270,7 @@ ul {
     background-color: #0f172a;
 }
 
-/* ==========================================
-   MODAL DE DETALLE DE PRODUCTO
-   ========================================== */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(15, 23, 42, 0.75);
-    backdrop-filter: blur(4px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 10000;
-    padding: 20px;
-    animation: fadeInModal 0.25s ease-out;
-}
+
 
 .modal-container {
     background-color: #ffffff;
@@ -302,26 +285,6 @@ ul {
     max-height: 90vh;
 }
 
-.modal-close-btn {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: #f1f5f9;
-    border: none;
-    font-size: 1.4rem;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    cursor: pointer;
-    z-index: 10;
-    color: #334155;
-    transition: background 0.2s, color 0.2s;
-}
-
-.modal-close-btn:hover {
-    background: var(--accent);
-    color: #ffffff;
-}
 
 .modal-image-col {
     width: 45%;
@@ -432,24 +395,6 @@ ul {
     transform: translateY(-2px);
 }
 
-@keyframes fadeInModal {
-    from { opacity: 0; transform: scale(0.95); }
-    to { opacity: 1; transform: scale(1); }
-}
-
-@media (max-width: 650px) {
-    .modal-container {
-        flex-direction: column;
-        max-height: 85vh;
-        overflow-y: auto;
-    }
-    .modal-image-col, .modal-info-col {
-        width: 100%;
-    }
-    .modal-image-col {
-        padding: 15px;
-    }
-}
 
 /* ==========================================
    ESTILOS DE LA TABLA DEL CARRITO
@@ -726,4 +671,347 @@ select:focus {
         gap: 1rem;
         font-size: 0.9rem;
     }
+}
+/* ==========================================
+   PÁGINA DETALLE DE PRODUCTO
+   ========================================== */
+
+#detalle-producto {
+    width: 100%;
+    padding: 2rem 0 2rem;
+}
+
+.detalle-principal {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+#detalle-producto .modal-container {
+    width: 100%;
+    max-width: 1050px;
+    margin: 0 auto;
+    max-height: none;
+    min-height: 520px;
+}
+
+#detalle-producto .modal-image-col {
+    width: 48%;
+    padding: 35px;
+}
+
+#detalle-producto .modal-image-col img {
+    width: 100%;
+    max-width: 460px;
+    max-height: 460px;
+    object-fit: contain;
+}
+
+#detalle-producto .modal-info-col {
+    width: 52%;
+    padding: 40px;
+    overflow: visible;
+}
+
+#detalle-producto .modal-title {
+    font-size: 2rem;
+    margin: 10px 0 18px;
+}
+
+#detalle-producto .modal-price {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+}
+
+.detalle-volver {
+    display: inline-block;
+    margin-top: 24px;
+    color: var(--text-main);
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.detalle-volver:hover {
+    color: var(--accent);
+}
+
+
+/* PRODUCTOS RELACIONADOS */
+
+.productos-relacionados {
+    max-width: 1050px;
+    margin: 3rem auto 0;
+}
+
+.productos-relacionados h2 {
+    text-align: left;
+    margin-bottom: 1.5rem;
+}
+
+.related-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.25rem;
+}
+
+.related-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06);
+    transition: transform 0.2s, box-shadow 0.2s;
+
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.related-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12);
+}
+
+.related-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    background: #f8fafc;
+}
+
+.related-card-info {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.related-category {
+    display: block;
+    color: #64748b;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 0.35rem;
+}
+
+.related-card h3 {
+    color: var(--text-dark);
+    font-size: 1rem;
+    line-height: 1.35;
+    min-height: 2.7em;
+    margin-bottom: 0.6rem;
+}
+
+.related-price {
+    color: var(--accent);
+    font-weight: 800;
+    font-size: 1.1rem;
+    margin-bottom: 0.85rem;
+}
+
+.btn-related {
+    width: 100%;
+    border: none;
+    border-radius: 6px;
+    padding: 0.65rem 0.8rem;
+    background: var(--primary);
+    color: #ffffff;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: auto;
+}
+
+.btn-related:hover {
+    background: var(--text-dark);
+}
+
+.detalle-error {
+    max-width: 700px;
+    margin: 4rem auto;
+    text-align: center;
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+
+/* RESPONSIVO */
+
+@media (max-width: 900px) {
+    .related-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 650px) {
+
+    #detalle-producto .modal-container {
+        flex-direction: column;
+        min-height: auto;
+    }
+
+    #detalle-producto .modal-image-col,
+    #detalle-producto .modal-info-col {
+        width: 100%;
+    }
+
+    #detalle-producto .modal-image-col {
+        padding: 20px;
+    }
+
+    #detalle-producto .modal-info-col {
+        padding: 25px;
+    }
+
+    .related-grid {
+        grid-template-columns: 1fr;
+    }
+}
+/* ==========================================
+   PÁGINA NOSOTROS
+   ========================================== */
+
+.about-card {
+    max-width: 800px;
+    margin: 0 auto;
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.about-title {
+    color: var(--accent);
+    margin-bottom: 1rem;
+}
+
+.about-text {
+    margin-bottom: 1.5rem;
+    color: var(--text-main);
+    line-height: 1.7;
+}
+
+.developers-list {
+    list-style: disc;
+    padding-left: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+/* ==========================================
+   PÁGINA BLOGS
+   ========================================== */
+
+.blogs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.blog-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+}
+
+.blog-card-img {
+    width: 200px;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.blog-card-content h3 {
+    font-size: 1.4rem;
+    color: var(--text-dark);
+}
+
+.blog-card-content p {
+    color: #64748b;
+    margin: 0.5rem 0 1rem;
+}
+
+.blog-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 650px) {
+    .blog-card {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .blog-card-img {
+        width: 100%;
+        height: 200px;
+    }
+}
+/* ==========================================
+   DETALLE DE BLOG
+   ========================================== */
+
+.blog-detail-container {
+    max-width: 800px;
+}
+
+.blog-detail-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.blog-detail-img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.blog-detail-text {
+    color: var(--text-main);
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+}
+
+.blog-back-link {
+    display: inline-block;
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.blog-back-link:hover {
+    color: var(--accent-hover);
+    text-decoration: underline;
+}
+
+@media (max-width: 650px) {
+    .blog-detail-card {
+        padding: 1.25rem;
+    }
+
+    .blog-detail-img {
+        height: 220px;
+    }
+}
+.blog-detail-img-contain {
+    object-fit: contain;
+    background: #f8fafc;
 }

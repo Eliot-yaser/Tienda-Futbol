@@ -7,8 +7,12 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+
     <header class="header">
-        <div class="logo"><a href="index.html">⚽ <span>Rey Del Balon</span></a></div>
+        <div class="logo">
+            <a href="index.html">⚽ <span>Rey Del Balon</span></a>
+        </div>
+
         <nav class="nav">
             <ul>
                 <li><a href="index.html">Home</a></li>
@@ -18,23 +22,46 @@
                 <li><a href="contacto.html">Contacto</a></li>
             </ul>
         </nav>
+
         <div class="cart-status" id="header-user-status">
-            <a href="carrito.html">🛒 Carrito (<span id="cart-count">0</span>)</a>
+            <a href="carrito.html">
+                🛒 Carrito (<span id="cart-count">0</span>)
+            </a>
             <a href="login.html" class="btn-login">Iniciar Sesión</a>
         </div>
     </header>
 
-    <main class="container" style="max-width: 800px;">
+    <main class="container blog-detail-container">
         <h2>La Evolución de los Balones de Fútbol</h2>
-        <div class="auth-card-page" style="max-width: 100%;">
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnS03_Dd_dwJzGs6J7v_QJ1sR_ChBzAtKNknYepVfj3XG4LdeRAEoDZlQ&s=10" alt="Balón" style="width: 100%; height: 300px; object-fit: cover; border-radius: 8px; margin-bottom: 1.5rem;">
-            <p>En los inicios del fútbol organizado, los balones estaban hechos de vejigas de animales cubiertas de cuero cosido a mano. Estos balones eran irregulares y ganaban muchísimo peso en días de lluvia. Hoy en día, la microfibra sintética y el termosellado garantizan trayectorias aerodinámicas perfectas.</p>
-            <br>
-            <a href="blogs.html">&larr; Volver a Blogs</a>
-        </div>
+
+        <article class="blog-detail-card">
+
+            <img
+                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnS03_Dd_dwJzGs6J7v_QJ1sR_ChBzAtKNknYepVfj3XG4LdeRAEoDZlQ&s=10"
+                alt="Evolución de los balones de fútbol"
+                class="blog-detail-img">
+
+            <p class="blog-detail-text">
+                En los inicios del fútbol organizado, los balones estaban hechos de vejigas
+                de animales cubiertas de cuero cosido a mano. Estos balones eran irregulares
+                y ganaban muchísimo peso en días de lluvia. Hoy en día, la microfibra
+                sintética y el termosellado garantizan trayectorias aerodinámicas perfectas.
+            </p>
+
+            <a href="blogs.html" class="blog-back-link">
+                &larr; Volver a Blogs
+            </a>
+
+        </article>
     </main>
 
-    <footer class="footer"><p>&copy; 2026 Rey Del Balon</p></footer>
-    <script src="js/productos.js"></script><script src="js/carrito.js"></script><script src="js/login.js"></script>
+    <footer class="footer">
+        <p>&copy; 2026 Rey Del Balon - Todos los derechos reservados.</p>
+    </footer>
+
+    <script src="js/productos.js"></script>
+    <script src="js/carrito.js"></script>
+    <script src="js/login.js"></script>
+
 </body>
 </html>

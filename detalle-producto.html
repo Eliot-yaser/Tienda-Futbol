@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog #2 - Rey Del Balon</title>
+    <title>Rey Del Balon - Detalle del Producto</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
 
+    <!-- Encabezado -->
     <header class="header">
         <div class="logo">
             <a href="index.html">⚽ <span>Rey Del Balon</span></a>
@@ -16,9 +19,9 @@
         <nav class="nav">
             <ul>
                 <li><a href="index.html">Home</a></li>
-                <li><a href="productos.html">Productos</a></li>
+                <li><a href="productos.html" class="active">Productos</a></li>
                 <li><a href="nosotros.html">Nosotros</a></li>
-                <li><a href="blogs.html" class="active">Blogs</a></li>
+                <li><a href="blogs.html">Blogs</a></li>
                 <li><a href="contacto.html">Contacto</a></li>
             </ul>
         </nav>
@@ -31,34 +34,19 @@
         </div>
     </header>
 
-    <main class="container blog-detail-container">
-        <h2>¿Por qué la camiseta de Chile es roja?</h2>
-
-        <article class="blog-detail-card">
-
-            <img
-                src="https://chinchileproducts.com/cdn/shop/files/Federacion-de-Futbol-de-Chile-Jersey.webp?v=1753385922&width=1946"
-                alt="Camiseta de la selección chilena"
-                class="blog-detail-img blog-detail-img-contain">
-
-            <p class="blog-detail-text">
-                Originalmente, la selección chilena vestía de blanco.
-                No fue hasta la década de 1940 que se adoptó definitivamente
-                la clásica combinación tricolor: camiseta roja, pantalón azul
-                y medias blancas, reflejando el espíritu de la bandera nacional.
-            </p>
-
-            <a href="blogs.html" class="blog-back-link">
-                &larr; Volver a Blogs
-            </a>
-
-        </article>
+    <!-- Detalle del producto -->
+    <main class="container">
+        <div id="detalle-producto">
+            <!-- JavaScript cargará aquí el producto -->
+        </div>
     </main>
 
+    <!-- Pie de página -->
     <footer class="footer">
         <p>&copy; 2026 Rey Del Balon - Todos los derechos reservados.</p>
     </footer>
 
+    <!-- Scripts -->
     <script src="js/productos.js"></script>
     <script src="js/carrito.js"></script>
     <script src="js/login.js"></script>
