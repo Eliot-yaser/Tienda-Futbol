@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
         renderizarCarrito();
     }
     if (document.getElementById("detalle-producto")) {
-    renderizarDetalleProducto();
+        renderizarDetalleProducto();
     }
 });
 
@@ -86,25 +86,71 @@ function renderizarProductos() {
         return;
     }
 
-    productos.forEach(prod => {
+    // Detectar si estamos en la página principal
+    const rutaActual = window.location.pathname;
+    const esHome =
+        rutaActual.endsWith("index.html") ||
+        rutaActual.endsWith("/");
+
+    let productosAMostrar = productos;
+
+    // En el Home solo mostramos 4 productos destacados
+    if (esHome) {
+        const codigosDestacados = [
+            "CAM-001",
+            "BOT-001",
+            "BAL-001",
+            "GUA-001"
+        ];
+
+        productosAMostrar = productos.filter(prod =>
+            codigosDestacados.includes(prod.codigo)
+        );
+    }
+
+    productosAMostrar.forEach(prod => {
         const precio = Number(prod.precio) || 0;
+
         const tarjeta = document.createElement("div");
-        tarjeta.classList.add("product-card");
-        
+
+        const categoriaClase = "cat-" + (prod.categoria || "general")
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/\s+/g, "-");
+
+        tarjeta.classList.add("product-card", categoriaClase);
+
         // Al hacer clic en cualquier parte de la tarjeta abre el detalle
         tarjeta.onclick = () => {
-            window.location.href = `detalle-producto.html?codigo=${prod.codigo}`;
+            window.location.href =
+                `detalle-producto.html?codigo=${prod.codigo}`;
         };
 
         tarjeta.innerHTML = `
-            <img src="${prod.imagen || ''}" alt="${prod.nombre || 'Producto'}" class="product-img">
+            <img
+                src="${prod.imagen || ''}"
+                alt="${prod.nombre || 'Producto'}"
+                class="product-img">
+
             <h3>${prod.nombre || 'Producto'}</h3>
-            <p class="category">${prod.categoria || 'General'}</p>
-            <p class="price">$${precio.toLocaleString("es-CL")}</p>
-            <button onclick="event.stopPropagation(); window.location.href='detalle-producto.html?codigo=${prod.codigo}'" class="btn-add">
-                Ver Detalle
+
+            <p class="category">
+                ${prod.categoria || 'General'}
+            </p>
+
+            <p class="price">
+                $${precio.toLocaleString("es-CL")}
+            </p>
+
+            <button
+                onclick="event.stopPropagation(); window.location.href='detalle-producto.html?codigo=${prod.codigo}'"
+                class="btn-add">
+
+                Añadir al Carrito
             </button>
         `;
+
         contenedor.appendChild(tarjeta);
     });
 }
@@ -325,9 +371,20 @@ function renderizarCarrito() {
     const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
     contenedor.innerHTML = "";
 
+    // Carrito vacío
     if (carrito.length === 0) {
-        contenedor.innerHTML = '<tr><td colspan="6" style="text-align:center;">El carrito está vacío</td></tr>';
-        if (elementoTotal) elementoTotal.textContent = "$0";
+        contenedor.innerHTML = `
+            <tr>
+                <td colspan="6" class="cart-empty">
+                    El carrito está vacío
+                </td>
+            </tr>
+        `;
+
+        if (elementoTotal) {
+            elementoTotal.textContent = "$0";
+        }
+
         return;
     }
 
@@ -337,26 +394,67 @@ function renderizarCarrito() {
         const precio = Number(prod.precio) || 0;
         const cantidad = Number(prod.cantidad) || 1;
         const subtotal = precio * cantidad;
+
         total += subtotal;
 
         const fila = document.createElement("tr");
+
         fila.innerHTML = `
-            <td><img src="${prod.imagen || ''}" width="50" alt="${prod.nombre || 'Producto'}"></td>
-            <td>${prod.nombre || 'Sin nombre'}</td>
-            <td>$${precio.toLocaleString("es-CL")}</td>
             <td>
-                <button onclick="cambiarCantidad(${index}, -1)">-</button>
-                <span style="margin: 0 5px;">${cantidad}</span>
-                <button onclick="cambiarCantidad(${index}, 1)">+</button>
+                <img
+                    src="${prod.imagen || ''}"
+                    alt="${prod.nombre || 'Producto'}"
+                    class="cart-product-img"
+                >
             </td>
-            <td>$${subtotal.toLocaleString("es-CL")}</td>
-            <td><button onclick="eliminarDelCarrito(${index})">Eliminar</button></td>
+
+            <td>
+                ${prod.nombre || 'Sin nombre'}
+            </td>
+
+            <td>
+                $${precio.toLocaleString("es-CL")}
+            </td>
+
+            <td>
+                <div class="cart-quantity">
+                    <button
+                        onclick="cambiarCantidad(${index}, -1)"
+                        aria-label="Disminuir cantidad">
+                        -
+                    </button>
+
+                    <span class="cart-quantity-value">
+                        ${cantidad}
+                    </span>
+
+                    <button
+                        onclick="cambiarCantidad(${index}, 1)"
+                        aria-label="Aumentar cantidad">
+                        +
+                    </button>
+                </div>
+            </td>
+
+            <td>
+                $${subtotal.toLocaleString("es-CL")}
+            </td>
+
+            <td>
+                <button
+                    onclick="eliminarDelCarrito(${index})"
+                    class="cart-delete-btn">
+                    Eliminar
+                </button>
+            </td>
         `;
+
         contenedor.appendChild(fila);
     });
 
     if (elementoTotal) {
-        elementoTotal.textContent = `$${total.toLocaleString("es-CL")}`;
+        elementoTotal.textContent =
+            `$${total.toLocaleString("es-CL")}`;
     }
 }
 

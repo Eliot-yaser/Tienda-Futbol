@@ -139,10 +139,17 @@ ul {
    HERO BANNER
    ========================================== */
 .hero {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    background-image:
+        linear-gradient(rgba(15, 23, 42, 0.55), rgba(15, 23, 42, 0.55)),
+        url("../img/hero-futbol.jpg");
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
     color: #ffffff;
     text-align: center;
-    padding: 4rem 1.5rem;
+    padding: 6rem 1.5rem;
     margin-bottom: 2rem;
     border-bottom: 4px solid var(--accent);
 }
@@ -223,10 +230,13 @@ ul {
 
 .product-img {
     width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 6px;
+    height: 220px;
+    object-fit: contain;
+    object-position: center;
+    background: #f8fafc;
+    border-radius: 8px;
     margin-bottom: 1rem;
+    padding: 10px;
     transition: transform 0.3s;
 }
 
@@ -462,28 +472,8 @@ td button:hover {
     border-top: 5px solid var(--accent);
 }
 
-.auth-tabs {
-    display: flex;
-    border-bottom: 2px solid var(--border-color);
-    margin-bottom: 25px;
-}
 
-.tab-btn {
-    flex: 1;
-    background: none;
-    border: none;
-    padding: 12px;
-    font-size: 0.95rem;
-    font-weight: 800;
-    color: #64748b;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
 
-.tab-btn.active {
-    color: var(--accent);
-    border-bottom: 3px solid var(--accent);
-}
 
 .auth-form {
     display: none;
@@ -1014,4 +1004,145 @@ select:focus {
 .blog-detail-img-contain {
     object-fit: contain;
     background: #f8fafc;
+}
+/* ==========================================
+   AJUSTE VISUAL POR CATEGORÍA
+   ========================================== */
+
+.product-card.cat-camisetas .product-img,
+.product-card.cat-shorts .product-img,
+.product-card.cat-medias .product-img {
+    padding: 8px;
+}
+
+.product-card.cat-calzado .product-img {
+    padding: 18px 8px;
+}
+
+.product-card.cat-balones .product-img {
+    padding: 28px;
+}
+
+.product-card.cat-guantes .product-img,
+.product-card.cat-canilleras .product-img {
+    padding: 20px;
+}
+.auth-register-link {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.auth-register-link a {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.auth-register-link a:hover {
+    text-decoration: underline;
+}
+.cart-summary {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.btn-empty-cart {
+    width: auto;
+    background-color: var(--accent);
+}
+
+.btn-empty-cart:hover {
+    background-color: var(--accent-hover);
+}
+
+.cart-back {
+    margin-top: 1.5rem;
+}
+
+.cart-back a {
+    font-weight: bold;
+}
+
+@media (max-width: 650px) {
+    .cart-summary {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn-empty-cart {
+        width: 100%;
+    }
+
+    .cart-summary h2 {
+        text-align: center;
+    }
+}
+/* ==========================================
+   ELEMENTOS INTERNOS DEL CARRITO
+   ========================================== */
+
+.cart-product-img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    background: #f8fafc;
+    border-radius: 4px;
+}
+
+.cart-quantity {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.cart-quantity-value {
+    min-width: 25px;
+    text-align: center;
+    font-weight: 700;
+}
+
+.cart-delete-btn {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.cart-delete-btn:hover {
+    color: #ffffff;
+    background-color: var(--accent);
+    border-color: var(--accent);
+}
+
+.cart-empty {
+    text-align: center;
+    padding: 2rem;
+    color: #64748b;
+}
+/* ==========================================
+   PÁGINA CONTACTO
+   ========================================== */
+
+.contact-container {
+    max-width: 600px;
+}
+
+.contact-form {
+    margin: 0 auto;
+    max-width: 100%;
+}
+
+.contact-textarea {
+    padding: 12px;
+    border: 1.5px solid var(--border-color);
+    border-radius: 6px;
+    font-family: var(--font-family);
+    font-size: 0.95rem;
+    resize: vertical;
+    outline: none;
+}
+
+.contact-textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.15);
 }

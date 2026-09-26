@@ -12,6 +12,7 @@
         <div class="logo">
             <a href="index.html">⚽ <span>Rey Del Balon</span></a>
         </div>
+
         <nav class="nav">
             <ul>
                 <li><a href="index.html">Home</a></li>
@@ -21,112 +22,299 @@
                 <li><a href="contacto.html" class="active">Contacto</a></li>
             </ul>
         </nav>
+
         <div class="cart-status" id="header-user-status">
-            <a href="carrito.html">🛒 Carrito (<span id="cart-count">0</span>)</a>
-            <a href="login.html" class="btn-login">Iniciar Sesión</a>
+            <a href="carrito.html">
+                🛒 Carrito (<span id="cart-count">0</span>)
+            </a>
+
+            <a href="login.html" class="btn-login">
+                Iniciar Sesión
+            </a>
         </div>
     </header>
 
-    <main class="container" style="max-width: 600px;">
+
+    <main class="container contact-container">
+
         <h2>Formulario de Contacto</h2>
 
-        <form id="form-contacto" class="auth-card-page" style="margin: 0 auto; max-width: 100%;" novalidate>
+        <form
+            id="form-contacto"
+            class="auth-card-page contact-form"
+            novalidate
+        >
+
+            <!-- Nombre -->
             <div class="form-group">
-                <label for="contact-nombre">Nombre Completo *</label>
-                <input type="text" id="contact-nombre" maxlength="100" placeholder="Tu Nombre" required>
-                <span class="error-msg" id="error-contact-nombre"></span>
+                <label for="contact-nombre">
+                    Nombre Completo *
+                </label>
+
+                <input
+                    type="text"
+                    id="contact-nombre"
+                    maxlength="100"
+                    placeholder="Tu Nombre"
+                    required
+                >
+
+                <span
+                    class="error-msg"
+                    id="error-contact-nombre">
+                </span>
             </div>
 
+
+            <!-- Correo -->
             <div class="form-group">
-                <label for="contact-email">Correo Electrónico *</label>
-                <input type="email" id="contact-email" maxlength="100" placeholder="ejemplo@duoc.cl" required>
-                <span class="error-msg" id="error-contact-email"></span>
+                <label for="contact-email">
+                    Correo Electrónico *
+                </label>
+
+                <input
+                    type="email"
+                    id="contact-email"
+                    maxlength="100"
+                    placeholder="ejemplo@duoc.cl"
+                    required
+                >
+
+                <span
+                    class="error-msg"
+                    id="error-contact-email">
+                </span>
             </div>
 
-            <!-- Campo Opcional: Teléfono / Celular -->
+
+            <!-- Teléfono -->
             <div class="form-group">
-                <label for="contact-telefono">Teléfono / Celular (Opcional)</label>
-                <input type="tel" id="contact-telefono" maxlength="15" placeholder="+56 9 1234 5678">
-                <span class="error-msg" id="error-contact-telefono"></span>
+                <label for="contact-telefono">
+                    Teléfono / Celular (Opcional)
+                </label>
+
+                <input
+                    type="tel"
+                    id="contact-telefono"
+                    maxlength="15"
+                    placeholder="+56 9 1234 5678"
+                >
+
+                <span
+                    class="error-msg"
+                    id="error-contact-telefono">
+                </span>
             </div>
 
+
+            <!-- Comentario -->
             <div class="form-group">
-                <label for="contact-comentario">Comentario *</label>
-                <textarea id="contact-comentario" maxlength="500" rows="5" style="padding: 12px; border: 1.5px solid var(--border-color); border-radius: 6px;" placeholder="Escribe tu mensaje..." required></textarea>
-                <span class="error-msg" id="error-contact-comentario"></span>
+                <label for="contact-comentario">
+                    Comentario *
+                </label>
+
+                <textarea
+                    id="contact-comentario"
+                    maxlength="500"
+                    rows="5"
+                    class="contact-textarea"
+                    placeholder="Escribe tu mensaje..."
+                    required>
+                </textarea>
+
+                <span
+                    class="error-msg"
+                    id="error-contact-comentario">
+                </span>
             </div>
 
-            <button type="submit" class="btn-auth">ENVIAR MENSAJE</button>
+
+            <button
+                type="submit"
+                class="btn-auth">
+                ENVIAR MENSAJE
+            </button>
+
         </form>
+
     </main>
 
+
     <footer class="footer">
-        <p>&copy; 2026 Rey Del Balon - Todos los derechos reservados.</p>
+        <p>
+            &copy; 2026 Rey Del Balon -
+            Todos los derechos reservados.
+        </p>
     </footer>
 
+
+    <!-- Scripts -->
     <script src="js/productos.js"></script>
     <script src="js/carrito.js"></script>
     <script src="js/login.js"></script>
+
+
     <script>
-        document.getElementById("form-contacto")?.addEventListener("submit", (e) => {
-            e.preventDefault();
-            document.querySelectorAll("#form-contacto .error-msg").forEach(s => s.textContent = "");
+        document
+            .getElementById("form-contacto")
+            ?.addEventListener("submit", (e) => {
 
-            const nombre = document.getElementById("contact-nombre").value.trim();
-            const email = document.getElementById("contact-email").value.trim();
-            const telefono = document.getElementById("contact-telefono").value.trim();
-            const comentario = document.getElementById("contact-comentario").value.trim();
-            let valido = true;
+                e.preventDefault();
 
-            // 1. Validar Nombre Completo
-            if (!nombre) {
-                document.getElementById("error-contact-nombre").textContent = "El nombre es requerido.";
-                valido = false;
-            } else if (nombre.length > 100) {
-                document.getElementById("error-contact-nombre").textContent = "Máximo 100 caracteres.";
-                valido = false;
-            }
+                document
+                    .querySelectorAll("#form-contacto .error-msg")
+                    .forEach(span => {
+                        span.textContent = "";
+                    });
 
-            // 2. Validar Correo Electrónico (REQUERIDO)
-            if (!email) {
-                document.getElementById("error-contact-email").textContent = "El correo es requerido.";
-                valido = false;
-            } else if (email.length > 100) {
-                document.getElementById("error-contact-email").textContent = "Máximo 100 caracteres.";
-                valido = false;
-            } else if (typeof validarDominioCorreo === "function" && !validarDominioCorreo(email)) {
-                document.getElementById("error-contact-email").textContent = "Solo correos @duoc.cl, @profesor.duoc.cl y @gmail.com";
-                valido = false;
-            }
 
-            // 3. Validar Teléfono / Celular (OPCIONAL)
-            if (telefono !== "") {
-                // Si el usuario escribe algo, valida que contenga solo números, espacios o el símbolo +
-                const regexTelefono = /^[+]?[0-9\s-]{8,15}$/;
-                if (!regexTelefono.test(telefono)) {
-                    document.getElementById("error-contact-telefono").textContent = "Ingresa un número de teléfono válido (ej: +56912345678).";
+                const nombre =
+                    document
+                        .getElementById("contact-nombre")
+                        .value
+                        .trim();
+
+                const email =
+                    document
+                        .getElementById("contact-email")
+                        .value
+                        .trim();
+
+                const telefono =
+                    document
+                        .getElementById("contact-telefono")
+                        .value
+                        .trim();
+
+                const comentario =
+                    document
+                        .getElementById("contact-comentario")
+                        .value
+                        .trim();
+
+
+                let valido = true;
+
+
+                // Validar Nombre
+                if (!nombre) {
+
+                    document
+                        .getElementById("error-contact-nombre")
+                        .textContent =
+                        "El nombre es requerido.";
+
+                    valido = false;
+
+                } else if (nombre.length > 100) {
+
+                    document
+                        .getElementById("error-contact-nombre")
+                        .textContent =
+                        "Máximo 100 caracteres.";
+
                     valido = false;
                 }
-            }
 
-            // 4. Validar Comentario
-            if (!comentario) {
-                document.getElementById("error-contact-comentario").textContent = "El comentario es requerido.";
-                valido = false;
-            } else if (comentario.length > 500) {
-                document.getElementById("error-contact-comentario").textContent = "Máximo 500 caracteres.";
-                valido = false;
-            }
 
-            if (valido) {
-                if (typeof mostrarNotificacionToast === "function") {
-                    mostrarNotificacionToast("¡Mensaje de contacto enviado con éxito!");
-                } else {
-                    alert("¡Mensaje enviado con éxito!");
+                // Validar Correo
+                if (!email) {
+
+                    document
+                        .getElementById("error-contact-email")
+                        .textContent =
+                        "El correo es requerido.";
+
+                    valido = false;
+
+                } else if (email.length > 100) {
+
+                    document
+                        .getElementById("error-contact-email")
+                        .textContent =
+                        "Máximo 100 caracteres.";
+
+                    valido = false;
+
+                } else if (
+                    typeof validarDominioCorreo === "function" &&
+                    !validarDominioCorreo(email)
+                ) {
+
+                    document
+                        .getElementById("error-contact-email")
+                        .textContent =
+                        "Solo correos @duoc.cl, @profesor.duoc.cl y @gmail.com";
+
+                    valido = false;
                 }
-                document.getElementById("form-contacto").reset();
-            }
-        });
+
+
+                // Validar Teléfono
+                if (telefono !== "") {
+
+                    const regexTelefono =
+                        /^[+]?[0-9\s-]{8,15}$/;
+
+                    if (!regexTelefono.test(telefono)) {
+
+                        document
+                            .getElementById("error-contact-telefono")
+                            .textContent =
+                            "Ingresa un número de teléfono válido (ej: +56912345678).";
+
+                        valido = false;
+                    }
+                }
+
+
+                // Validar Comentario
+                if (!comentario) {
+
+                    document
+                        .getElementById("error-contact-comentario")
+                        .textContent =
+                        "El comentario es requerido.";
+
+                    valido = false;
+
+                } else if (comentario.length > 500) {
+
+                    document
+                        .getElementById("error-contact-comentario")
+                        .textContent =
+                        "Máximo 500 caracteres.";
+
+                    valido = false;
+                }
+
+
+                // Si todo está correcto
+                if (valido) {
+
+                    if (
+                        typeof mostrarNotificacionToast === "function"
+                    ) {
+
+                        mostrarNotificacionToast(
+                            "¡Mensaje de contacto enviado con éxito!"
+                        );
+
+                    } else {
+
+                        alert(
+                            "¡Mensaje enviado con éxito!"
+                        );
+                    }
+
+
+                    document
+                        .getElementById("form-contacto")
+                        .reset();
+                }
+
+            });
     </script>
+
 </body>
 </html>
