@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Administración - Tienda Fútbol</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- FontAwesome Iconos -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      min-height: 100vh;
+      background-color: #f8f9fa;
+    }
+    .sidebar {
+      min-height: 100vh;
+      background-color: #1e293b;
+      color: #fff;
+    }
+    .sidebar .nav-link {
+      color: #cbd5e1;
+      border-radius: 6px;
+      margin-bottom: 4px;
+    }
+    .sidebar .nav-link:hover, .sidebar .nav-link.active {
+      background-color: #0d6efd;
+      color: #fff;
+    }
+    .badge-critical {
+      background-color: #dc3545;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container-fluid">
+  <div class="row">
+    
+    <!-- Sidebar / Menú Vertical -->
+    <nav class="col-md-3 col-lg-2 d-md-block sidebar p-3 collapse show" id="sidebarMenu">
+      <div class="d-flex align-items-center mb-4 text-white text-decoration-none fs-5 fw-bold">
+        <i class="fa-solid fa-futbol me-2"></i> Admin Fútbol
+      </div>
+      <hr class="text-secondary">
+      <ul class="nav nav-pills flex-column mb-auto" id="adminTabs" role="tablist">
+        <li class="nav-item">
+          <button class="nav-link w-100 text-start active" id="dashboard-tab" data-bs-toggle="pill" data-bs-target="#dashboard" type="button">
+            <i class="fa-solid fa-chart-line me-2"></i> Dashboard
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link w-100 text-start" id="productos-tab" data-bs-toggle="pill" data-bs-target="#productos" type="button">
+            <i class="fa-solid fa-box-open me-2"></i> Mantenedor Productos
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link w-100 text-start" id="usuarios-tab" data-bs-toggle="pill" data-bs-target="#usuarios" type="button">
+            <i class="fa-solid fa-users me-2"></i> Mantenedor Usuarios
+          </button>
+        </li>
+      </ul>
+      <hr class="text-secondary">
+      <div>
+        <a href="index.html" class="btn btn-outline-light w-100 text-start">
+          <i class="fa-solid fa-store me-2"></i> Volver a la Tienda
+        </a>
+      </div>
+    </nav>
+
+    <!-- Contenido Principal -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+      <div class="tab-content" id="adminTabsContent">
+        
+        <!-- Pestaña 1: Dashboard -->
+        <div class="tab-pane fade show active" id="dashboard" role="tabpanel">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Panel de Control</h2>
+            <span class="badge bg-primary fs-6">Rol: Administrador</span>
+          </div>
+
+          <div class="row g-3 mb-4">
+            <div class="col-md-4">
+              <div class="card bg-primary text-white p-3">
+                <h5>Total Productos</h5>
+                <h3 id="dash-total-prods">0</h3>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card bg-warning text-dark p-3">
+                <h5>Alertas de Stock Crítico</h5>
+                <h3 id="dash-stock-critico">0</h3>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card bg-success text-white p-3">
+                <h5>Usuarios Registrados</h5>
+                <h3 id="dash-total-users">0</h3>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pestaña 2: Mantenedor de Productos -->
+        <div class="tab-pane fade" id="productos" role="tabpanel">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3>Gestión de Productos</h3>
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalProducto">
+              <i class="fa-solid fa-plus me-1"></i> Nuevo Producto
+            </button>
+          </div>
+
+          <div class="table-responsive bg-white rounded shadow-sm p-3">
+            <table class="table table-hover align-middle">
+              <thead class="table-dark">
+                <tr>
+                  <th>Código</th>
+                  <th>Nombre</th>
+                  <th>Precio</th>
+                  <th>Stock</th>
+                  <th>Stock Crítico</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-productos">
+                <!-- Se llena dinámicamente desde JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Pestaña 3: Mantenedor de Usuarios -->
+        <div class="tab-pane fade" id="usuarios" role="tabpanel">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3>Gestión de Usuarios</h3>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalUsuario">
+              <i class="fa-solid fa-user-plus me-1"></i> Nuevo Usuario
+            </button>
+          </div>
+
+          <div class="table-responsive bg-white rounded shadow-sm p-3">
+            <table class="table table-hover align-middle">
+              <thead class="table-dark">
+                <tr>
+                  <th>RUN</th>
+                  <th>Nombre Completo</th>
+                  <th>Correo</th>
+                  <th>Rol</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-usuarios">
+                <!-- Se llena dinámicamente desde JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Modal Crear / Editar Producto -->
+<div class="modal fade" id="modalProducto" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Formulario de Producto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="form-producto">
+          <div class="mb-3">
+            <label class="form-label">Código del Producto (Min. 3 caracteres)</label>
+            <input type="text" class="form-control" id="prod-codigo" minlength="3" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Nombre (Máx. 100 caracteres)</label>
+            <input type="text" class="form-control" id="prod-nombre" maxlength="100" required>
+          </div>
+          <div class="row">
+            <div class="col-6 mb-3">
+              <label class="form-label">Precio ($)</label>
+              <input type="number" class="form-control" id="prod-precio" min="0" step="0.01" required>
+            </div>
+            <div class="col-6 mb-3">
+              <label class="form-label">Stock Actual</label>
+              <input type="number" class="form-control" id="prod-stock" min="0" step="1" required>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Stock Crítico</label>
+            <input type="number" class="form-control" id="prod-stock-critico" min="0" step="1" required>
+          </div>
+          <button type="submit" class="btn btn-success w-100">Guardar Producto</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Crear / Editar Usuario -->
+<div class="modal fade" id="modalUsuario" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Formulario de Usuario</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="form-usuario">
+          <div class="mb-3">
+            <label class="form-label">RUN (sin puntos ni guión, Ej: 19011022K)</label>
+            <input type="text" class="form-control" id="user-run" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Nombre Completo</label>
+            <input type="text" class="form-control" id="user-nombre" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Correo (@duoc.cl, @profesor.duoc.cl, @gmail.com)</label>
+            <input type="email" class="form-control" id="user-correo" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Rol</label>
+            <select class="form-select" id="user-rol" required>
+              <option value="Administrador">Administrador</option>
+              <option value="Vendedor">Vendedor</option>
+              <option value="Cliente">Cliente</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Guardar Usuario</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Lógica JavaScript del Administrador -->
+<script src="js/admin.js"></script>
+</body>
+</html>

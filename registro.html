@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - Rey Del Balon</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <!-- Encabezado / Navegación -->
+    <header class="header">
+        <div class="logo">
+            <a href="index.html">⚽ <span>Rey Del Balon</span></a>
+        </div>
+
+        <nav class="nav">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="productos.html">Productos</a></li>
+                <li><a href="nosotros.html">Nosotros</a></li>
+                <li><a href="blogs.html">Blogs</a></li>
+                <li><a href="contacto.html">Contacto</a></li>
+            </ul>
+        </nav>
+
+        <div class="cart-status" id="header-user-status">
+            <a href="carrito.html">
+                🛒 Carrito (<span id="cart-count">0</span>)
+            </a>
+
+            <a href="login.html" class="btn-login">
+                Iniciar Sesión
+            </a>
+        </div>
+    </header>
+
+
+    <!-- Registro -->
+    <main class="main-auth-container">
+
+        <div class="auth-card-page">
+
+            <form id="form-register" class="auth-form active" novalidate>
+
+                <h2>Crea tu cuenta</h2>
+
+                <p class="auth-subtitle">
+                    Completa los datos requeridos para registrarte.
+                </p>
+
+
+                <!-- RUN -->
+                <div class="form-group">
+                    <label for="reg-run">
+                        RUN (Sin puntos ni guion) *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="reg-run"
+                        minlength="7"
+                        maxlength="9"
+                        placeholder="19011022K"
+                        required
+                    >
+
+                    <span
+                        class="error-msg"
+                        id="error-reg-run">
+                    </span>
+                </div>
+
+
+                <!-- Nombre -->
+                <div class="form-group">
+                    <label for="reg-nombre">Nombre *</label>
+
+                    <input
+                        type="text"
+                        id="reg-nombre"
+                        maxlength="50"
+                        placeholder="Juan"
+                        required
+                    >
+
+                    <span
+                        class="error-msg"
+                        id="error-reg-nombre">
+                    </span>
+                </div>
+
+
+                <!-- Apellidos -->
+                <div class="form-group">
+                    <label for="reg-apellidos">Apellidos *</label>
+
+                    <input
+                        type="text"
+                        id="reg-apellidos"
+                        maxlength="100"
+                        placeholder="Pérez González"
+                        required
+                    >
+
+                    <span
+                        class="error-msg"
+                        id="error-reg-apellidos">
+                    </span>
+                </div>
+
+
+                <!-- Correo -->
+                <div class="form-group">
+                    <label for="reg-email">
+                        Correo Electrónico *
+                    </label>
+
+                    <input
+                        type="email"
+                        id="reg-email"
+                        maxlength="100"
+                        placeholder="ejemplo@duoc.cl"
+                        required
+                    >
+
+                    <span
+                        class="error-msg"
+                        id="error-reg-email">
+                    </span>
+                </div>
+
+
+                <!-- Fecha de Nacimiento -->
+                <div class="form-group">
+                    <label for="reg-fecha-nac">
+                        Fecha de Nacimiento (Opcional)
+                    </label>
+
+                    <input
+                        type="date"
+                        id="reg-fecha-nac"
+                    >
+
+                    <span
+                        class="error-msg"
+                        id="error-reg-fecha-nac">
+                    </span>
+                </div>
+
+
+                <!-- Región -->
+                <div class="form-group">
+                    <label for="reg-region">Región *</label>
+
+                    <select id="reg-region" required>
+                        <option value="">
+                            -- Selecciona una Región --
+                        </option>
+                    </select>
+
+                    <span
+                        class="error-msg"
+                        id="error-reg-region">
+                    </span>
+                </div>
+
+
+                <!-- Comuna -->
+                <div class="form-group">
+                    <label for="reg-comuna">Comuna *</label>
+
+                    <select
+                        id="reg-comuna"
+                        required
+                        disabled
+                    >
+                        <option value="">
+                            -- Selecciona primero una Región --
+                        </option>
+                    </select>
+
+                    <span
+                        class="error-msg"
+                        id="error-reg-comuna">
+                    </span>
+                </div>
+
+
+                <!-- Dirección -->
+                <div class="form-group">
+                    <label for="reg-direccion">
+                        Dirección *
+                    </label>
+
+                    <input
+                        type="text"
+                        id="reg-direccion"
+                        maxlength="300"
+                        placeholder="Av. Siempre Viva 123"
+                        required
+                    >
+
+                    <span
+                        class="error-msg"
+                        id="error-reg-direccion">
+                    </span>
+                </div>
+
+
+                <!-- Contraseña -->
+                <div class="form-group">
+                    <label for="reg-pass">
+                        Contraseña (4 a 10 caracteres) *
+                    </label>
+
+                    <input
+                        type="password"
+                        id="reg-pass"
+                        minlength="4"
+                        maxlength="10"
+                        placeholder="••••••••"
+                        required
+                    >
+
+                    <span
+                        class="error-msg"
+                        id="error-reg-pass">
+                    </span>
+                </div>
+
+
+                <!-- Confirmar Contraseña -->
+                <div class="form-group">
+                    <label for="reg-pass-confirm">
+                        Confirmar Contraseña *
+                    </label>
+
+                    <input
+                        type="password"
+                        id="reg-pass-confirm"
+                        minlength="4"
+                        maxlength="10"
+                        placeholder="••••••••"
+                        required
+                    >
+
+                    <span
+                        class="error-msg"
+                        id="error-reg-pass-confirm">
+                    </span>
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="btn-auth">
+                    CREAR CUENTA
+                </button>
+
+
+                <p class="auth-subtitle auth-register-link">
+                    ¿Ya tienes una cuenta?
+                    <a href="login.html">
+                        Inicia sesión
+                    </a>
+                </p>
+
+            </form>
+
+        </div>
+
+    </main>
+
+
+    <!-- Pie de Página -->
+    <footer class="footer">
+        <p>
+            &copy; 2026 Rey Del Balon -
+            Todos los derechos reservados.
+        </p>
+    </footer>
+
+
+    <!-- Scripts -->
+    <script src="js/productos.js"></script>
+    <script src="js/carrito.js"></script>
+    <script src="js/login.js"></script>
+
+</body>
+</html>
