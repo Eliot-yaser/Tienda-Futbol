@@ -59,14 +59,42 @@ ul {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
+/* --- LOGO REY DEL BALÓN (SIN CÍRCULO BLANCO Y CORONA DERECHA) --- */
 .logo a {
     font-size: 1.5rem;
     font-weight: bold;
     color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
 }
 
-.logo span {
+.logo > a > span:last-child {
     color: var(--accent);
+}
+
+.logo-king-ball {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+/* Corona más grande, centrada y completamente derecha */
+.logo-king-ball .crown {
+    font-size: 20px;          /* Tamaño más grande */
+    margin-bottom: -8px;      /* Se acomoda justo sobre el balón */
+    transform: rotate(0deg);  /* Derecha, sin inclinación */
+    z-index: 2;
+}
+
+/* Balón sin fondo blanco */
+.logo-king-ball .ball {
+    font-size: 26px;          /* Tamaño del balón */
+    line-height: 1;
+    background: transparent;  /* Quita el círculo blanco de atrás */
 }
 
 .nav ul {
@@ -271,6 +299,42 @@ body.page-contacto {
 }
 
 body.page-contacto .container h2 {
+    color: #ffffff;
+    text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9);
+}
+
+/* Fondo exclusivo para la página del Carrito */
+body.page-carrito {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), 
+                      url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSItprUzft5NF2iHpyU-uPv4ViQAwR4gaGR8qV9H63uKEK9E2RBG0xjK2Y&s=10');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+/* Quitar el color azul del contenedor principal en login y registro */
+body.page-login .main-auth-container,
+body.page-registro .main-auth-container {
+    background: transparent;
+    background-color: transparent;
+}
+
+/* Fondo exclusivo para Inicio de Sesión y Registro */
+body.page-login,
+body.page-registro {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), 
+                      url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQeqrV87d3n8mJiAiylp4z93VIaTd2gpNT9mo74cHDjQx2Y3G00qxXT5KA&s=10') !important;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+/* Cambia el título y el total a blanco para que resalten con el fondo */
+body.page-carrito h2,
+body.page-carrito h1,
+body.page-carrito .total-container,
+body.page-carrito label {
     color: #ffffff;
     text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.9);
 }
@@ -1340,4 +1404,262 @@ select:focus {
 .badge-cliente {
     background-color: #6c757d;
     color: #fff;
+}
+/* --- ESTILO PARA EL BOTÓN VOLVER A LA TIENDA --- */
+.cart-back a,
+.btn-volver {
+    display: inline-block;
+    background-color: rgba(15, 23, 42, 0.85); /* Fondo oscuro translúcido */
+    color: #ffffff !important;                 /* Texto blanco de alto contraste */
+    padding: 0.6rem 1.4rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(5px);                 /* Efecto difuminado elegante */
+    transition: all 0.3s ease;
+    margin-top: 15px;
+}
+
+.cart-back a:hover,
+.btn-volver:hover {
+    background-color: var(--accent);            /* Cambia a rojo/rosa principal */
+    border-color: var(--accent);
+    color: #ffffff !important;
+    transform: translateY(-2px);
+}
+
+/* =========================================================
+   1. PROTECCIÓN DE FORMULARIOS GENERALES (LOGIN, REGISTRO, CONTACTO)
+   ========================================================= */
+.container form input[type="text"],
+.container form input[type="email"],
+.container form input[type="password"],
+.container form input[type="tel"],
+.container form textarea {
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px;
+    padding: 0.7rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.container form label {
+    color: #475569 !important;
+    font-weight: 600;
+}
+
+/* =========================================================
+   2. DISEÑO MEJORADO PARA "PROCEDER AL PAGO"
+   ========================================================= */
+.cart-summary .btn-pay {
+    background-color: #10b981;
+    color: #ffffff !important;
+    border: none;
+    padding: 0.75rem 1.4rem;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+}
+
+.cart-summary .btn-pay:hover {
+    background-color: #059669;
+    transform: translateY(-2px);
+}
+
+/* =========================================================
+   3. ESTILOS EXCLUSIVOS DEL MODAL (#modal-pago)
+   ========================================================= */
+#modal-pago {
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(6px);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+    padding: 15px;
+}
+
+#modal-pago .modal-content {
+    background: #1e293b;
+    color: #ffffff;
+    padding: 2rem;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 440px;
+    position: relative;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-sizing: border-box;
+}
+
+#modal-pago * {
+    box-sizing: border-box;
+}
+
+#modal-pago .modal-subtitle {
+    font-size: 0.88rem;
+    color: #94a3b8;
+    margin-bottom: 14px;
+}
+
+#modal-pago .close-modal {
+    position: absolute;
+    top: 14px; right: 18px;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: #94a3b8;
+}
+
+#modal-pago .close-modal:hover { color: #ffffff; }
+
+#modal-pago .payment-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+#modal-pago .method-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #0f172a;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #ffffff;
+    transition: border-color 0.2s;
+}
+
+#modal-pago .method-option:hover {
+    border-color: var(--accent);
+}
+
+/* Solo afecta a los campos dentro del modal de pago */
+#modal-pago .form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 12px;
+    text-align: left;
+    width: 100%;
+}
+
+#modal-pago .form-group label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #cbd5e1 !important;
+    text-transform: uppercase;
+}
+
+#modal-pago .form-group input {
+    background: #0f172a !important;
+    color: #ffffff !important;
+    border: 1px solid #334155 !important;
+    border-radius: 6px;
+    padding: 0.65rem 0.8rem;
+    font-size: 0.9rem;
+}
+
+#modal-pago .form-row {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+}
+
+#modal-pago .form-row .form-group {
+    flex: 1;
+    min-width: 0;
+}
+
+#modal-pago .info-box {
+    background: #0f172a;
+    border: 1px solid #334155;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: #cbd5e1;
+    margin-bottom: 12px;
+}
+
+#modal-pago .btn-confirm-pay {
+    width: 100%;
+    background: var(--accent);
+    color: #ffffff;
+    padding: 0.85rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-top: 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+}
+
+#modal-pago .btn-confirm-pay:hover {
+    background: var(--accent-hover);
+}
+
+/* ANIMACIÓN Y EFECTOS PARA WEBPAY */
+.loading-container {
+    text-align: center;
+    padding: 2rem 1rem;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #334155;
+    border-top: 5px solid var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1.5rem auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.success-container {
+    text-align: center;
+    padding: 1rem 0;
+}
+
+.success-icon {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+.receipt-box {
+    background: #0f172a;
+    border: 1px solid #334155;
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 1.2rem 0;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.receipt-box p {
+    margin: 6px 0;
+    color: #cbd5e1;
 }

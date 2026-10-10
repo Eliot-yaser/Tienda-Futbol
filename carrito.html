@@ -6,10 +6,17 @@
     <title>Carrito de Compras - Rey Del Balon</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body class="page-carrito">
+
     <header class="header">
         <div class="logo">
-            <a href="index.html">⚽ <span>Rey Del Balon</span></a>
+            <a href="index.html">
+                <span class="logo-king-ball">
+                    <span class="crown">👑</span>
+                    <span class="ball">⚽</span>
+                </span>
+                <span>Rey Del Balon</span>
+            </a>
         </div>
         <nav class="nav">
             <ul>
@@ -50,17 +57,116 @@
                 Vaciar Carrito
             </button>
 
+            <button onclick="abrirModalPago()" class="btn-pay">
+                💳 Proceder al Pago
+            </button>
+
             <h2>
                 Total: <span id="total-carrito">$0</span>
             </h2>
         </div>
 
         <div class="cart-back">
-            <a href="productos.html">
+            <a href="productos.html" class="btn-volver">
                 &larr; Volver a la tienda
             </a>
         </div>
     </main>
+
+    <!-- MODAL DE PAGO INTERACTIVO -->
+    <div id="modal-pago" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-modal" onclick="cerrarModalPago()">&times;</span>
+            
+            <!-- PASO 1: SELECCIÓN Y FORMULARIO DE PAGO -->
+            <div id="paso-formulario">
+                <h2>Pasarela de Pago ⚽</h2>
+                <p class="modal-subtitle">Selecciona tu método de pago preferido:</p>
+                
+                <div class="payment-methods">
+                    <label class="method-option">
+                        <input type="radio" name="metodo-pago" value="tarjeta" checked onchange="cambiarMetodoPago()">
+                        <span>💳 Tarjeta Crédito / Débito</span>
+                    </label>
+                    <label class="method-option">
+                        <input type="radio" name="metodo-pago" value="webpay" onchange="cambiarMetodoPago()">
+                        <span>🔴 Webpay Plus / Redcompra</span>
+                    </label>
+                    <label class="method-option">
+                        <input type="radio" name="metodo-pago" value="transferencia" onchange="cambiarMetodoPago()">
+                        <span>🏦 Transferencia Bancaria</span>
+                    </label>
+                </div>
+
+                <form id="form-pago" onsubmit="procesarPago(event)">
+                    <!-- Opción 1: Tarjeta -->
+                    <div id="sec-tarjeta" class="payment-section">
+                        <div class="form-group">
+                            <label>Nombre en la tarjeta</label>
+                            <input type="text" id="card-name" placeholder="Ej. Juan Pérez" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Número de Tarjeta</label>
+                            <input type="text" id="card-number" placeholder="1234 5678 9012 3456" maxlength="19" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Vencimiento</label>
+                                <input type="text" id="card-exp" placeholder="MM/AA" maxlength="5" required>
+                            </div>
+                            <div class="form-group">
+                                <label>CVV</label>
+                                <input type="password" id="card-cvv" placeholder="123" maxlength="3" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Opción 2: Webpay -->
+                    <div id="sec-webpay" class="payment-section" style="display: none;">
+                        <div class="info-box">
+                            <p>🔒 Serás redirigido a la pasarela segura de <strong>Webpay Plus (Transbank)</strong> para autorizar la transacción.</p>
+                        </div>
+                    </div>
+
+                    <!-- Opción 3: Transferencia -->
+                    <div id="sec-transferencia" class="payment-section" style="display: none;">
+                        <div class="info-box">
+                            <p><strong>Datos para Transferir:</strong></p>
+                            <p>• Banco: Banco de Chile</p>
+                            <p>• Tipo: Cuenta Corriente N° 123-45678-90</p>
+                            <p>• RUT: 76.543.210-K | Rey Del Balón SpA</p>
+                            <p>• Correo: pagos@reydelbalon.cl</p>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btn-submit-pago" class="btn-confirm-pay">Confirmar y Pagar</button>
+                </form>
+            </div>
+
+            <!-- PASO 2: CARGANDO / PROCESANDO (SIMULACIÓN WEBPAY) -->
+            <div id="paso-cargando" style="display: none;" class="loading-container">
+                <div class="spinner"></div>
+                <h3 id="loading-title">Conectando con Webpay Plus...</h3>
+                <p>Por favor no cierres esta ventana mientras procesamos la solicitud.</p>
+            </div>
+
+            <!-- PASO 3: COMPROBANTE DE ÉXITO -->
+            <div id="paso-exito" style="display: none;" class="success-container">
+                <div class="success-icon">✅</div>
+                <h2>¡Pago Confirmado!</h2>
+                <p class="success-msg">Tu pedido ha sido procesado exitosamente y el stock del producto ha sido actualizado.</p>
+                
+                <div class="receipt-box">
+                    <p><strong>Orden #:</strong> <span id="recibo-orden"></span></p>
+                    <p><strong>Método:</strong> <span id="recibo-metodo"></span></p>
+                    <p><strong>Total Pagado:</strong> <span id="recibo-total"></span></p>
+                </div>
+
+                <a href="productos.html" class="btn-confirm-pay btn-finish">Volver a la Tienda</a>
+            </div>
+
+        </div>
+    </div>
 
     <footer class="footer">
         <p>&copy; 2026 Rey Del Balon - Todos los derechos reservados.</p>
