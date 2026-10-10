@@ -1,4 +1,45 @@
 // ==========================================
+// ROLES: Administrador (acceso total) y Vendedor (solo ve productos y ventas)
+// ==========================================
+function obtenerUsuarioActual() {
+    try { return JSON.parse(localStorage.getItem("usuarioLogueado")); } catch (e) { return null; }
+}
+
+function esVendedor() {
+    const u = obtenerUsuarioActual();
+    return !!u && u.rol === "Vendedor";
+}
+
+// Oculta todo lo que el Vendedor NO debe ver ni usar
+function aplicarPermisosPorRol() {
+    const u = obtenerUsuarioActual();
+
+    // Etiqueta con el rol real en el encabezado
+    const badgeRol = document.querySelector(".admin-header .badge");
+    if (badgeRol && u) badgeRol.textContent = "Rol: " + u.rol;
+
+    if (!esVendedor()) return;
+
+    // Tarjetas del dashboard: el vendedor no ve Stock Crítico ni Usuarios
+    ["stock-critico", "usuarios"].forEach(nombre => {
+        const tarjeta = document.querySelector(`[onclick="toggleSeccion('${nombre}')"]`);
+        if (tarjeta) tarjeta.closest(".col-md-3").style.display = "none";
+        const seccion = document.getElementById("sec-" + nombre);
+        if (seccion) seccion.style.display = "none";
+    });
+
+    // Productos en modo solo lectura: sin botón "Nuevo Producto" ni columna de acciones
+    const btnNuevoProducto = document.querySelector('[data-bs-target="#modalProducto"]');
+    if (btnNuevoProducto) btnNuevoProducto.style.display = "none";
+
+    const tablaProductos = document.getElementById("tabla-productos");
+    const thAcciones = tablaProductos ? tablaProductos.closest("table").querySelector("thead th:last-child") : null;
+    if (thAcciones) thAcciones.style.display = "none";
+}
+
+document.addEventListener("DOMContentLoaded", aplicarPermisosPorRol);
+
+// ==========================================
 // CONTROL DE ACCESO Y AUTENTICACIÓN
 // ==========================================
 
@@ -52,7 +93,8 @@ function obtenerUsuarios() {
             mapaUsuarios.set(correoKey, {
                 ...base,
                 ...u,
-                rut: u.rut || base.rut || "11111111"
+                run: u.run || u.rut || base.run || base.rut || "",
+                rut: u.rut || u.run || base.rut || base.run || ""
             });
         }
     });
@@ -77,66 +119,179 @@ function obtenerProductos() {
     }
     return iniciales;
 }
-function guardarUsuario(e) {
-    if (e) e.preventDefault();
+// ==========================================
+// FORMULARIO DE USUARIO (con validaciones en tiempo real)
+// Usa regionesYComunas, validarRunChileno y validarDominioCorreo de login.js
+// ==========================================
+const CAMPOS_USUARIO = ["run", "nombre", "apellidos", "correo", "fecha-nac", "rol", "region", "comuna", "direccion", "password", "confirm-password"];
 
-    let usuarios = obtenerUsuarios() || [];
-    const modalEl = document.getElementById("modalUsuario") || document.getElementById("modal-usuario") || document;
+function valorUsuario(campo) {
+    const el = document.getElementById("user-" + campo);
+    return el ? el.value.trim() : "";
+}
 
-    const getInpVal = (terminos) => {
-        const inputs = Array.from(modalEl.querySelectorAll("input, select"));
-        const inp = inputs.find(i => terminos.some(t => (i.id || "").toLowerCase().includes(t) || (i.name || "").toLowerCase().includes(t)));
-        return inp ? inp.value.trim() : "";
-    };
+// Muestra (o limpia) el mensaje de error de un campo. Devuelve true si NO hay error.
+function mostrarErrorUsuario(campo, mensaje) {
+    const spanError = document.getElementById("error-user-" + campo);
+    if (spanError) spanError.textContent = mensaje;
+    const input = document.getElementById("user-" + campo);
+    if (input) input.classList.toggle("is-invalid", mensaje !== "");
+    return mensaje === "";
+}
 
-    const uAntiguo = (indexEditandoUsuario !== null && indexEditandoUsuario >= 0 && usuarios[indexEditandoUsuario]) ? usuarios[indexEditandoUsuario] : {};
+function validarCampoUsuario(campo) {
+    const v = valorUsuario(campo);
+    const editando = indexEditandoUsuario !== null;
+    // Para detectar duplicados se ignora el usuario que se está editando
+    const otros = obtenerUsuarios().filter((u, i) => i !== indexEditandoUsuario);
+    const err = (mensaje) => mostrarErrorUsuario(campo, mensaje);
 
-    const rut = getInpVal(["rut", "run"]) || uAntiguo.rut || "11111111";
-    const nombre = getInpVal(["nombre"]) || uAntiguo.nombre || "Usuario";
-    const correo = getInpVal(["correo", "email"]) || uAntiguo.correo || uAntiguo.email || "";
-    const rol = getInpVal(["rol"]) || uAntiguo.rol || "Cliente";
-    const pass = getInpVal(["pass", "contra", "password"]);
-    const passConfirm = getInpVal(["confirm", "confirmar"]);
+    switch (campo) {
+        case "run":
+            if (!v) return err("El RUN es requerido.");
+            if (!/^[0-9]+[0-9kK]$/.test(v)) return err("Ingresa el RUN sin puntos ni guion. Ej: 19011022K");
+            if (v.length < 7 || v.length > 9) return err("El RUN debe tener entre 7 y 9 caracteres.");
+            if (!validarRunChileno(v)) return err("El RUN no es válido, revisa el dígito verificador.");
+            if (otros.some(u => String(u.run || u.rut || "").toUpperCase() === v.toUpperCase())) return err("Este RUN ya está registrado.");
+            return err("");
 
-    // Validar coincidencia de contraseña solo si el usuario escribió algo en las casillas
-    if (pass !== "" || passConfirm !== "") {
-        if (pass !== passConfirm) {
-            alert("Las contraseñas no coinciden.");
-            return;
+        case "nombre":
+            if (!v) return err("El nombre es requerido.");
+            if (v.length > 50) return err("El nombre no puede superar los 50 caracteres.");
+            return err("");
+
+        case "apellidos":
+            if (!v) return err("Los apellidos son requeridos.");
+            if (v.length > 100) return err("Los apellidos no pueden superar los 100 caracteres.");
+            return err("");
+
+        case "correo":
+            if (!v) return err("El correo es requerido.");
+            if (v.length > 100) return err("El correo no puede superar los 100 caracteres.");
+            if (!validarDominioCorreo(v)) return err("Solo correos @duoc.cl, @profesor.duoc.cl y @gmail.com");
+            if (otros.some(u => String(u.email || u.correo || "").toLowerCase() === v.toLowerCase())) return err("Este correo ya está registrado.");
+            return err("");
+
+        case "fecha-nac":
+            // Opcional, pero si se ingresa no puede ser una fecha futura
+            if (v && new Date(v) > new Date()) return err("La fecha de nacimiento no puede ser futura.");
+            return err("");
+
+        case "rol":
+            if (!v) return err("Selecciona el tipo de usuario.");
+            return err("");
+
+        case "region":
+            if (!v) return err("Selecciona una región.");
+            return err("");
+
+        case "comuna":
+            if (!v) return err("Selecciona una comuna.");
+            return err("");
+
+        case "direccion":
+            if (!v) return err("La dirección es requerida.");
+            if (v.length > 300) return err("La dirección no puede superar los 300 caracteres.");
+            return err("");
+
+        case "password":
+            if (!editando && !v) return err("La contraseña es requerida.");
+            if (v && (v.length < 4 || v.length > 10)) return err("La contraseña debe tener entre 4 y 10 caracteres.");
+            return err("");
+
+        case "confirm-password": {
+            const pass = valorUsuario("password");
+            if (!editando && !v) return err("Confirma la contraseña.");
+            if (pass !== v) return err("Las contraseñas no coinciden.");
+            return err("");
         }
     }
+    return true;
+}
+
+// Llena el select de regiones con el arreglo regionesYComunas
+function poblarRegionesUsuario() {
+    const selRegion = document.getElementById("user-region");
+    if (!selRegion || typeof regionesYComunas === "undefined") return;
+    selRegion.innerHTML = '<option value="">-- Seleccione la región --</option>';
+    regionesYComunas.forEach(r => {
+        const op = document.createElement("option");
+        op.value = r.region;
+        op.textContent = r.region;
+        selRegion.appendChild(op);
+    });
+}
+
+// Al cambiar la región, cambia la lista de comunas
+function cargarComunasUsuario() {
+    const selRegion = document.getElementById("user-region");
+    const selComuna = document.getElementById("user-comuna");
+    if (!selRegion || !selComuna) return;
+    selComuna.innerHTML = '<option value="">-- Seleccione la comuna --</option>';
+    const hallada = (typeof regionesYComunas !== "undefined") ? regionesYComunas.find(r => r.region === selRegion.value) : null;
+    if (hallada) {
+        hallada.comunas.forEach(c => {
+            const op = document.createElement("option");
+            op.value = c;
+            op.textContent = c;
+            selComuna.appendChild(op);
+        });
+    }
+    selComuna.disabled = !hallada;
+}
+
+function limpiarFormularioUsuario() {
+    const form = document.getElementById("form-usuario");
+    if (form) form.reset();
+    indexEditandoUsuario = null;
+    cargarComunasUsuario();
+    CAMPOS_USUARIO.forEach(c => mostrarErrorUsuario(c, ""));
+    const titulo = document.querySelector("#modalUsuario .modal-title");
+    if (titulo) titulo.textContent = "Nuevo Usuario";
+}
+
+function guardarUsuarioDesdeFormulario(e) {
+    if (e) e.preventDefault();
+    if (esVendedor()) return; // El vendedor solo puede visualizar
+
+    // Se validan TODOS los campos (map evalúa cada uno para mostrar todos los errores a la vez)
+    const todoOk = CAMPOS_USUARIO.map(validarCampoUsuario).every(Boolean);
+    if (!todoOk) return;
+
+    const usuarios = obtenerUsuarios();
+    const uAntiguo = indexEditandoUsuario !== null ? (usuarios[indexEditandoUsuario] || {}) : {};
+
+    const run = valorUsuario("run").toUpperCase();
+    const correo = valorUsuario("correo");
+    const passFinal = valorUsuario("password") || uAntiguo.pass || uAntiguo.password;
 
     const usuarioGuardado = {
-        rut: rut,
-        nombre: nombre,
-        correo: correo,
+        ...uAntiguo,
+        run: run,
+        rut: run,
+        nombre: valorUsuario("nombre"),
+        apellidos: valorUsuario("apellidos"),
         email: correo,
-        rol: rol,
-        pass: pass !== "" ? pass : (uAntiguo.pass || uAntiguo.password || "1234"),
-        password: pass !== "" ? pass : (uAntiguo.pass || uAntiguo.password || "1234")
+        correo: correo,
+        fechaNac: valorUsuario("fecha-nac"),
+        region: valorUsuario("region"),
+        comuna: valorUsuario("comuna"),
+        direccion: valorUsuario("direccion"),
+        rol: valorUsuario("rol"),
+        pass: passFinal,
+        password: passFinal
     };
 
-    if (indexEditandoUsuario !== null && indexEditandoUsuario >= 0) {
+    if (indexEditandoUsuario !== null) {
         usuarios[indexEditandoUsuario] = usuarioGuardado;
     } else {
         usuarios.push(usuarioGuardado);
     }
 
-    // Guardar en localStorage
-    localStorage.setItem('usuariosRegistrados', JSON.stringify(usuarios));
-    localStorage.setItem('usuarios', JSON.stringify(usuarios));
-
-    // Cerrar Modal
-    if (modalEl && window.bootstrap) {
-        const inst = bootstrap.Modal.getInstance(modalEl);
-        if (inst) inst.hide();
-    }
-
-    indexEditandoUsuario = null;
-
-    // Refrescar tabla y contadores del panel
-    if (typeof cargarUsuarios === "function") cargarUsuarios();
-    if (typeof actualizarDashboard === "function") actualizarDashboard();
+    localStorage.setItem("usuariosRegistrados", JSON.stringify(usuarios));
+    cerrarModal("modalUsuario");
+    limpiarFormularioUsuario();
+    refrescarTodo();
 }
 
 function guardarProductos(productos) {
@@ -144,6 +299,7 @@ function guardarProductos(productos) {
     localStorage.setItem('productos', JSON.stringify(productos));
 }
 function guardarProducto(e) {
+    if (esVendedor()) return; // El vendedor solo puede visualizar
     if (e) e.preventDefault();
 
     let productos = obtenerProductos() || [];
@@ -241,95 +397,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modalTitle) modalTitle.textContent = "Nuevo Producto";
     });
 
-    document.querySelector('[data-bs-target="#modalUsuario"]')?.addEventListener('click', () => {
-        indexEditandoUsuario = null;
-        const form = document.getElementById('form-usuario');
-        if (form) form.reset();
-        const modalTitle = document.querySelector('#modalUsuario .modal-title');
-        if (modalTitle) modalTitle.textContent = "Nuevo Usuario";
+    // ---- Formulario de usuario ----
+    poblarRegionesUsuario();
+    cargarComunasUsuario();
+
+    document.querySelector('[data-bs-target="#modalUsuario"]')?.addEventListener('click', limpiarFormularioUsuario);
+
+    document.getElementById('form-usuario')?.addEventListener('submit', guardarUsuarioDesdeFormulario);
+
+    // Validación en tiempo real: cada campo se revisa mientras el usuario escribe o cambia la opción
+    CAMPOS_USUARIO.forEach(campo => {
+        const el = document.getElementById("user-" + campo);
+        if (!el) return;
+        el.addEventListener(el.tagName === "SELECT" ? "change" : "input", () => {
+            validarCampoUsuario(campo);
+            // Si cambia la contraseña, se vuelve a comprobar la confirmación
+            if (campo === "password" && valorUsuario("confirm-password") !== "") validarCampoUsuario("confirm-password");
+        });
     });
-
-    document.getElementById('form-usuario')?.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const rut = document.getElementById('user-rut').value.trim();
-        const nombre = document.getElementById('user-nombre').value.trim();
-        const correo = document.getElementById('user-correo').value.trim();
-        const rol = document.getElementById('user-rol').value || 'Cliente';
-
-        const password = document.getElementById('user-password').value;
-        const confirmPassword = document.getElementById('user-confirm-password').value;
-
-        const dominiosPermitidos = ['@duoc.cl', '@profesor.duoc.cl', '@gmail.com'];
-        const esValido = dominiosPermitidos.some(domain => correo.toLowerCase().endsWith(domain));
-        if (!esValido) {
-            alert("El correo debe terminar en @duoc.cl, @profesor.duoc.cl o @gmail.com");
-            return;
-        }
-
-        let usuarios = obtenerUsuarios();
-
-        if (indexEditandoUsuario !== null && indexEditandoUsuario >= 0) {
-            let userActual = usuarios[indexEditandoUsuario];
-            let passFinal = userActual.pass || userActual.password || "1234";
-
-            if (password || confirmPassword) {
-                if (password !== confirmPassword) {
-                    alert("Las contraseñas no coinciden.");
-                    return;
-                }
-                if (password.length < 4) {
-                    alert("La contraseña debe tener al menos 4 caracteres.");
-                    return;
-                }
-                passFinal = password;
-            }
-
-            usuarios[indexEditandoUsuario] = {
-                ...userActual,
-                rut,
-                nombre,
-                email: correo,
-                correo,
-                rol,
-                pass: passFinal,
-                password: passFinal
-            };
-            indexEditandoUsuario = null;
-        } else {
-            if (!password || !confirmPassword) {
-                alert("Debes ingresar y confirmar la contraseña.");
-                return;
-            }
-            if (password !== confirmPassword) {
-                alert("Las contraseñas no coinciden.");
-                return;
-            }
-            if (password.length < 4) {
-                alert("La contraseña debe tener al menos 4 caracteres.");
-                return;
-            }
-
-            if (usuarios.some(u => (u.email || u.correo || "").toLowerCase() === correo.toLowerCase())) {
-                alert("Este correo ya está registrado.");
-                return;
-            }
-
-            usuarios.push({
-                rut,
-                nombre,
-                email: correo,
-                correo,
-                rol,
-                pass: password,
-                password: password
-            });
-        }
-
-        localStorage.setItem('usuariosRegistrados', JSON.stringify(usuarios));
-        e.target.reset();
-        cerrarModal('modalUsuario');
-        refrescarTodo();
-    });
+    document.getElementById("user-region")?.addEventListener("change", cargarComunasUsuario);
 });
 
 // ==========================================
@@ -337,6 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ==========================================
 
 function toggleSeccion(nombre) {
+    if (esVendedor() && (nombre === 'usuarios' || nombre === 'stock-critico')) return;
     const idSeccion = `sec-${nombre}`;
     const seccionObjetivo = document.getElementById(idSeccion);
     if (!seccionObjetivo) return;
@@ -372,7 +459,7 @@ function cerrarModal(modalId) {
 // ------------------------------------
 // RENDERIZADO DE TABLAS
 // ------------------------------------
-// (Las funciones obtenerKeysTallasPorProducto y normalizarObjetoTallas están en js/tallas.js)
+// (Las funciones obtenerKeysTallasPorProducto y normalizarObjetoTallas están en js/productos.js)
 
 
 
@@ -421,14 +508,14 @@ function cargarProductos() {
                     ${esCritico ? '<span class="badge bg-danger ms-1">Stock Crítico</span>' : ''}
                 </td>
                 <td><span class="badge bg-secondary">${limit} u.</span></td>
-                <td>
+                ${esVendedor() ? '' : `<td>
                     <button class="btn btn-sm btn-primary me-1" onclick="editarProducto(${index})" title="Editar">
                         <i class="fa-solid fa-pen"></i>
                     </button>
                     <button class="btn btn-sm btn-danger" onclick="eliminarProducto(${index})" title="Eliminar">
                         <i class="fa-solid fa-trash"></i>
                     </button>
-                </td>
+                </td>`}
             </tr>
             <tr id="desglose-row-${index}" style="display: none;" class="bg-light">
                 <td colspan="6" class="p-3 bg-light border-top-0">
@@ -480,11 +567,11 @@ function cargarUsuarios() {
 
         return `
             <tr>
-                <td><code>${u.rut || u.run || 'N/A'}</code></td>
-                <td>${u.nombre || 'Sin nombre'}</td>
+                <td><code>${u.run || u.rut || 'N/A'}</code></td>
+                <td>${u.nombre || 'Sin nombre'} ${u.apellidos || ''}</td>
                 <td>${u.correo || u.email || 'N/A'}</td>
                 <td>
-                    <span class="badge ${esAdmin ? 'bg-danger' : 'bg-info text-dark'}">
+                    <span class="badge ${esAdmin ? 'bg-danger' : (u.rol === 'Vendedor' ? 'bg-warning text-dark' : 'bg-info text-dark')}">
                         ${u.rol || 'Cliente'}
                     </span>
                 </td>
@@ -722,6 +809,7 @@ function renderizarCamposTallasModal(p) {
 // EDICIÓN Y ELIMINACIÓN
 // ==========================================
 function editarProducto(index) {
+    if (esVendedor()) return; // El vendedor solo puede visualizar
     const productos = obtenerProductos();
     const p = productos[index];
     if (!p) return;
@@ -756,33 +844,40 @@ function editarProducto(index) {
     }
 }
 function editarUsuario(index) {
-    const usuarios = obtenerUsuarios();
-    const u = usuarios[index];
+    if (esVendedor()) return; // El vendedor solo puede visualizar
+    const u = obtenerUsuarios()[index];
     if (!u) return;
 
+    limpiarFormularioUsuario();
     indexEditandoUsuario = index;
 
-    document.getElementById('user-rut').value = u.rut || '';
-    document.getElementById('user-nombre').value = u.nombre || '';
-    document.getElementById('user-correo').value = u.correo || u.email || '';
+    const poner = (campo, valor) => {
+        const el = document.getElementById("user-" + campo);
+        if (el) el.value = valor || "";
+    };
 
-    const selectRol = document.getElementById('user-rol');
-    if (selectRol) {
-        selectRol.value = (u.rol === 'Administrador') ? 'Administrador' : 'Cliente';
+    poner("run", u.run || u.rut);
+    poner("nombre", u.nombre);
+    poner("apellidos", u.apellidos);
+    poner("correo", u.correo || u.email);
+    poner("fecha-nac", u.fechaNac);
+    poner("rol", (u.rol === "Administrador" || u.rol === "Vendedor") ? u.rol : "Cliente");
+    poner("region", u.region);
+    cargarComunasUsuario();          // primero se cargan las comunas de la región...
+    poner("comuna", u.comuna);       // ...y luego se elige la comuna del usuario
+    poner("direccion", u.direccion);
+
+    const titulo = document.querySelector("#modalUsuario .modal-title");
+    if (titulo) titulo.textContent = "Editar Usuario";
+
+    const modalEl = document.getElementById("modalUsuario");
+    if (modalEl && typeof bootstrap !== "undefined") {
+        bootstrap.Modal.getOrCreateInstance(modalEl).show();
     }
-
-    if (document.getElementById('user-password')) document.getElementById('user-password').value = '';
-    if (document.getElementById('user-confirm-password')) document.getElementById('user-confirm-password').value = '';
-
-    const modalTitle = document.querySelector('#modalUsuario .modal-title');
-    if (modalTitle) modalTitle.textContent = "Editar Usuario";
-
-    const modalEl = document.getElementById('modalUsuario');
-    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-    modal.show();
 }
 
 function eliminarProducto(index) {
+    if (esVendedor()) return; // El vendedor solo puede visualizar
     if (!confirm("¿Estás seguro de que deseas eliminar este producto?")) return;
     let productos = obtenerProductos();
     productos.splice(index, 1);
@@ -791,6 +886,7 @@ function eliminarProducto(index) {
 }
 
 function eliminarUsuario(index) {
+    if (esVendedor()) return; // El vendedor solo puede visualizar
     if (!confirm("¿Estás seguro de que deseas eliminar este usuario?")) return;
     let usuarios = obtenerUsuarios();
     usuarios.splice(index, 1);
