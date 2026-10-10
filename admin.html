@@ -1,245 +1,302 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel de Administración - Tienda Fútbol</title>
-  <!-- Bootstrap 5 CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- FontAwesome Iconos -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    body {
-      min-height: 100vh;
-      background-color: #f8f9fa;
-    }
-    .sidebar {
-      min-height: 100vh;
-      background-color: #1e293b;
-      color: #fff;
-    }
-    .sidebar .nav-link {
-      color: #cbd5e1;
-      border-radius: 6px;
-      margin-bottom: 4px;
-    }
-    .sidebar .nav-link:hover, .sidebar .nav-link.active {
-      background-color: #0d6efd;
-      color: #fff;
-    }
-    .badge-critical {
-      background-color: #dc3545;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Tienda Fútbol</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        .admin-header {
+            background-color: #1e293b;
+            color: #ffffff;
+        }
+
+        .card-clickable {
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            user-select: none;
+        }
+        .card-clickable:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2) !important;
+        }
+        .card-ventas {
+            background-color: #6f42c1 !important;
+            color: #ffffff;
+        }
+        .badge-talla {
+            font-size: 0.8rem;
+            margin-right: 4px;
+            margin-bottom: 2px;
+            display: inline-block;
+        }
+    </style>
 </head>
 <body>
 
-<div class="container-fluid">
-  <div class="row">
-    
-    <!-- Sidebar / Menú Vertical -->
-    <nav class="col-md-3 col-lg-2 d-md-block sidebar p-3 collapse show" id="sidebarMenu">
-      <div class="d-flex align-items-center mb-4 text-white text-decoration-none fs-5 fw-bold">
-        <i class="fa-solid fa-futbol me-2"></i> Admin Fútbol
-      </div>
-      <hr class="text-secondary">
-      <ul class="nav nav-pills flex-column mb-auto" id="adminTabs" role="tablist">
-        <li class="nav-item">
-          <button class="nav-link w-100 text-start active" id="dashboard-tab" data-bs-toggle="pill" data-bs-target="#dashboard" type="button">
-            <i class="fa-solid fa-chart-line me-2"></i> Dashboard
-          </button>
-        </li>
-        <li class="nav-item">
-          <button class="nav-link w-100 text-start" id="productos-tab" data-bs-toggle="pill" data-bs-target="#productos" type="button">
-            <i class="fa-solid fa-box-open me-2"></i> Mantenedor Productos
-          </button>
-        </li>
-        <li class="nav-item">
-          <button class="nav-link w-100 text-start" id="usuarios-tab" data-bs-toggle="pill" data-bs-target="#usuarios" type="button">
-            <i class="fa-solid fa-users me-2"></i> Mantenedor Usuarios
-          </button>
-        </li>
-      </ul>
-      <hr class="text-secondary">
-      <div>
-        <a href="index.html" class="btn btn-outline-light w-100 text-start">
-          <i class="fa-solid fa-store me-2"></i> Volver a la Tienda
-        </a>
-      </div>
-    </nav>
-
-    <!-- Contenido Principal -->
-    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
-      <div class="tab-content" id="adminTabsContent">
-        
-        <!-- Pestaña 1: Dashboard -->
-        <div class="tab-pane fade show active" id="dashboard" role="tabpanel">
-          <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Panel de Control</h2>
+<header class="admin-header py-3 mb-4 shadow-sm">
+    <div class="container-fluid px-4 d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-3">
+            <h3 class="m-0 fs-4 fw-bold">
+                <i class="fa-solid fa-futbol me-2"></i>Admin Fútbol
+            </h3>
             <span class="badge bg-primary fs-6">Rol: Administrador</span>
-          </div>
+        </div>
+        <a href="index.html" class="btn btn-outline-light btn-sm">
+            <i class="fa-solid fa-store me-2"></i>Volver a la Tienda
+        </a>
+    </div>
+</header>
 
-          <div class="row g-3 mb-4">
-            <div class="col-md-4">
-              <div class="card bg-primary text-white p-3">
+<div class="container-fluid px-4">
+    <h2 class="mb-4">Panel de Control</h2>
+
+    <!-- PANELES INTERACTIVOS -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white p-3 shadow-sm card-clickable" onclick="toggleSeccion('productos')">
                 <h5>Total Productos</h5>
-                <h3 id="dash-total-prods">0</h3>
-              </div>
+                <h1 id="dash-total-prods">0</h1>
+                <small style="opacity: 0.85;">👇 Haz clic para ver / ocultar</small>
             </div>
-            <div class="col-md-4">
-              <div class="card bg-warning text-dark p-3">
-                <h5>Alertas de Stock Crítico</h5>
-                <h3 id="dash-stock-critico">0</h3>
-              </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark p-3 shadow-sm card-clickable" onclick="toggleSeccion('stock-critico')">
+                <h5>Alertas Stock Crítico</h5>
+                <h1 id="dash-stock-critico">0</h1>
+                <small style="opacity: 0.85;">👇 Haz clic para ver / ocultar</small>
             </div>
-            <div class="col-md-4">
-              <div class="card bg-success text-white p-3">
+        </div>
+
+        <div class="col-md-3">
+            <div class="card bg-success text-white p-3 shadow-sm card-clickable" onclick="toggleSeccion('usuarios')">
                 <h5>Usuarios Registrados</h5>
-                <h3 id="dash-total-users">0</h3>
-              </div>
+                <h1 id="dash-total-users">0</h1>
+                <small style="opacity: 0.85;">👇 Haz clic para ver / ocultar</small>
             </div>
-          </div>
         </div>
 
-        <!-- Pestaña 2: Mantenedor de Productos -->
-        <div class="tab-pane fade" id="productos" role="tabpanel">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h3>Gestión de Productos</h3>
-            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalProducto">
-              <i class="fa-solid fa-plus me-1"></i> Nuevo Producto
-            </button>
-          </div>
+        <div class="col-md-3">
+            <div class="card card-ventas p-3 shadow-sm card-clickable" onclick="toggleSeccion('ventas')">
+                <h5>Ventas Realizadas 🛍️</h5>
+                <h1 id="dash-total-ventas">0</h1>
+                <small style="opacity: 0.85;">👇 Haz clic para ver / ocultar</small>
+            </div>
+        </div>
+    </div>
 
-          <div class="table-responsive bg-white rounded shadow-sm p-3">
-            <table class="table table-hover align-middle">
-              <thead class="table-dark">
-                <tr>
-                  <th>Código</th>
-                  <th>Nombre</th>
-                  <th>Precio</th>
-                  <th>Stock</th>
-                  <th>Stock Crítico</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="tabla-productos">
-                <!-- Se llena dinámicamente desde JS -->
-              </tbody>
-            </table>
-          </div>
+    <!-- SECCIONES DESPLEGABLES -->
+    <div id="secciones-container">
+
+        <!-- 1. GESTIÓN DE PRODUCTOS -->
+        <div id="sec-productos" class="seccion-panel d-none mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="m-0">Gestión de Productos</h3>
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalProducto">
+                    <i class="fa-solid fa-plus me-2"></i>Nuevo Producto
+                </button>
+            </div>
+
+            <div class="table-responsive bg-white rounded shadow-sm p-3">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Precio</th>
+                            <th>Stock por Talla (Total)</th>
+                            <th>Límite Crítico</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-productos"></tbody>
+                </table>
+            </div>
         </div>
 
-        <!-- Pestaña 3: Mantenedor de Usuarios -->
-        <div class="tab-pane fade" id="usuarios" role="tabpanel">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h3>Gestión de Usuarios</h3>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalUsuario">
-              <i class="fa-solid fa-user-plus me-1"></i> Nuevo Usuario
-            </button>
-          </div>
-
-          <div class="table-responsive bg-white rounded shadow-sm p-3">
-            <table class="table table-hover align-middle">
-              <thead class="table-dark">
-                <tr>
-                  <th>RUN</th>
-                  <th>Nombre Completo</th>
-                  <th>Correo</th>
-                  <th>Rol</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="tabla-usuarios">
-                <!-- Se llena dinámicamente desde JS -->
-              </tbody>
-            </table>
-          </div>
+        <!-- 2. STOCK CRÍTICO POR TALLA -->
+        <div id="sec-stock-critico" class="seccion-panel d-none mb-5">
+            <h3 class="mb-3 text-danger"><i class="fa-solid fa-triangle-exclamation me-2"></i>Productos con Stock Crítico por Talla</h3>
+            <div class="table-responsive bg-white rounded shadow-sm p-3">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Código</th>
+                            <th>Producto</th>
+                            <th>Talla Affectada</th>
+                            <th>Stock Actual</th>
+                            <th>Límite Crítico</th>
+                            <th>Precio</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-dash-stock-critico"></tbody>
+                </table>
+            </div>
         </div>
 
-      </div>
-    </main>
-  </div>
+        <!-- 3. GESTIÓN DE USUARIOS -->
+        <div id="sec-usuarios" class="seccion-panel d-none mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="m-0">Gestión de Usuarios</h3>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalUsuario">
+                    <i class="fa-solid fa-user-plus me-2"></i>Nuevo Usuario
+                </button>
+            </div>
+
+            <div class="table-responsive bg-white rounded shadow-sm p-3">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>RUT</th>
+                            <th>Nombre Completo</th>
+                            <th>Correo</th>
+                            <th>Rol</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-usuarios"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 4. HISTORIAL DE VENTAS -->
+        <div id="sec-ventas" class="seccion-panel d-none mb-5">
+            <h3 class="mb-3 text-primary"><i class="fa-solid fa-receipt me-2"></i>Historial de Ventas e Ingresos</h3>
+            <div class="table-responsive bg-white rounded shadow-sm p-3">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Orden #</th>
+                            <th>Fecha / Hora</th>
+                            <th>Método de Pago</th>
+                            <th>Productos Vendidos</th>
+                            <th>Total Pagado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-ventas"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
 </div>
 
-<!-- Modal Crear / Editar Producto -->
+<!-- Modal Crear / Editar Producto (Con Stock por Talla) -->
 <div class="modal fade" id="modalProducto" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Formulario de Producto</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <form id="form-producto">
-          <div class="mb-3">
-            <label class="form-label">Código del Producto (Min. 3 caracteres)</label>
-            <input type="text" class="form-control" id="prod-codigo" minlength="3" required>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Nombre (Máx. 100 caracteres)</label>
-            <input type="text" class="form-control" id="prod-nombre" maxlength="100" required>
-          </div>
-          <div class="row">
-            <div class="col-6 mb-3">
-              <label class="form-label">Precio ($)</label>
-              <input type="number" class="form-control" id="prod-precio" min="0" step="0.01" required>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Formulario de Producto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="col-6 mb-3">
-              <label class="form-label">Stock Actual</label>
-              <input type="number" class="form-control" id="prod-stock" min="0" step="1" required>
+            <div class="modal-body">
+                <form id="form-producto">
+                    <div class="mb-3">
+                        <label class="form-label">Código del Producto</label>
+                        <input type="text" class="form-control" id="prod-codigo" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nombre</label>
+                        <input type="text" class="form-control" id="prod-nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Precio ($)</label>
+                        <input type="number" class="form-control" id="prod-precio" min="0" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Categoría</label>
+                        <select class="form-select" id="prod-categoria" required>
+                            <option value="">-- Seleccione la categoría --</option>
+                            <option value="Camisetas">Camisetas</option>
+                            <option value="Shorts">Shorts</option>
+                            <option value="Calzado">Calzado</option>
+                            <option value="Balones">Balones</option>
+                            <option value="Medias">Medias</option>
+                            <option value="Canilleras">Canilleras</option>
+                            <option value="Guantes">Guantes</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descripción (opcional, máx. 500)</label>
+                        <input type="text" class="form-control" id="prod-descripcion" maxlength="500">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Imagen (URL, opcional)</label>
+                        <input type="text" class="form-control" id="prod-imagen">
+                    </div>
+
+                    <!-- Aquí se dibujan las tallas según la categoría (admin.js) -->
+                    <div class="row g-2 mb-3" id="contenedor-tallas-dinamico"></div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Límite Stock Crítico (Por Talla)</label>
+                        <input type="number" class="form-control" id="prod-stock-critico" min="0" value="3" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100">Guardar Producto</button>
+                </form>
             </div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Stock Crítico</label>
-            <input type="number" class="form-control" id="prod-stock-critico" min="0" step="1" required>
-          </div>
-          <button type="submit" class="btn btn-success w-100">Guardar Producto</button>
-        </form>
-      </div>
+        </div>
     </div>
-  </div>
 </div>
 
-<!-- Modal Crear / Editar Usuario -->
+<!-- Modal Usuario -->
 <div class="modal fade" id="modalUsuario" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Formulario de Usuario</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <form id="form-usuario">
-          <div class="mb-3">
-            <label class="form-label">RUN (sin puntos ni guión, Ej: 19011022K)</label>
-            <input type="text" class="form-control" id="user-run" required>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Nombre Completo</label>
-            <input type="text" class="form-control" id="user-nombre" required>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Correo (@duoc.cl, @profesor.duoc.cl, @gmail.com)</label>
-            <input type="email" class="form-control" id="user-correo" required>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Rol</label>
-            <select class="form-select" id="user-rol" required>
-              <option value="Administrador">Administrador</option>
-              <option value="Vendedor">Vendedor</option>
-              <option value="Cliente">Cliente</option>
-            </select>
-          </div>
-          <button type="submit" class="btn btn-primary w-100">Guardar Usuario</button>
-        </form>
-      </div>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nuevo Usuario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-usuario">
+                    <div class="mb-3">
+                        <label class="form-label">RUT</label>
+                        <input type="text" class="form-control" id="user-rut" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nombre Completo</label>
+                        <input type="text" class="form-control" id="user-nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Correo</label>
+                        <input type="email" class="form-control" id="user-correo" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Rol</label>
+                        <select class="form-select" id="user-rol" required>
+                            <option value="Administrador">Administrador</option>
+                            <option value="Cliente">Cliente</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Contraseña</label>
+                        <input type="password" class="form-control" id="user-password">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Confirmar Contraseña</label>
+                        <input type="password" class="form-control" id="user-confirm-password">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Guardar Usuario</button>
+                </form>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 
-<!-- Bootstrap 5 JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Lógica JavaScript del Administrador -->
+<script src="js/tallas.js"></script>
 <script src="js/admin.js"></script>
 </body>
 </html>
