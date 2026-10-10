@@ -60,7 +60,8 @@ document.addEventListener("DOMContentLoaded", () => {
             // Buscar usuario en el registro local
             const usuariosRegistrados = JSON.parse(localStorage.getItem("usuariosRegistrados")) || [];
             const usuarioEncontrado = usuariosRegistrados.find(
-                u => u.email.toLowerCase() === email.toLowerCase() && u.pass === password
+                u => String(u.email || u.correo || "").toLowerCase() === email.toLowerCase() &&
+                     (u.pass || u.password) === password
             );
 
             if (usuarioEncontrado) {
@@ -69,8 +70,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 mostrarNotificacionToast(`¡Bienvenido de nuevo, ${usuarioEncontrado.nombre}!`);
                 
+                // Administrador y Vendedor van al panel; el Cliente va a la tienda
+                const iraPanel = usuarioEncontrado.rol === "Administrador" || usuarioEncontrado.rol === "Vendedor";
                 setTimeout(() => {
-                    window.location.href = "index.html";
+                    window.location.href = iraPanel ? "admin.html" : "index.html";
                 }, 1500);
             } else {
                 mostrarError("error-login-email", "El correo o la contraseña son incorrectos, o la cuenta no existe.");
@@ -129,11 +132,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Validar si el correo o RUN ya existen
             const usuarios = JSON.parse(localStorage.getItem("usuariosRegistrados")) || [];
-            if (usuarios.some(u => u.email.toLowerCase() === email.toLowerCase())) {
+            if (usuarios.some(u => String(u.email || u.correo || "").toLowerCase() === email.toLowerCase())) {
                 mostrarError("error-reg-email", "Este correo ya está registrado.");
                 esValido = false;
             }
-            if (usuarios.some(u => u.run.toUpperCase() === run.toUpperCase())) {
+            if (usuarios.some(u => String(u.run || u.rut || "").toUpperCase() === run.toUpperCase())) {
                 mostrarError("error-reg-run", "Este RUN ya está registrado.");
                 esValido = false;
             }
@@ -361,6 +364,7 @@ function actualizarEstadoHeader() {
 
     if (usuario) {
         const esAdmin = usuario.rol === "Administrador";
+        const esVendedor = usuario.rol === "Vendedor";
         const rolTexto = usuario.rol || "Cliente";
 
         headerStatus.innerHTML = `
@@ -377,9 +381,9 @@ function actualizarEstadoHeader() {
                         <span>Rol: <strong>${rolTexto}</strong></span>
                     </div>
 
-                    ${esAdmin ? `
+                    ${esAdmin || esVendedor ? `
                         <a href="admin.html" class="dropdown-item-custom">
-                            ⚙️ Panel de Admin
+                            ${esAdmin ? "⚙️ Panel de Admin" : "📋 Panel de Vendedor"}
                         </a>
                     ` : ''}
 
