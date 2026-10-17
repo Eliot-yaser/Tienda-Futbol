@@ -17,6 +17,7 @@ import Nosotros from "./pages/Nosotros";
 import Blogs from "./pages/Blogs";
 import Contacto from "./pages/Contacto";
 import DetalleProducto from "./pages/DetalleProducto";
+import AdminInventario from "./pages/AdminInventario";
 
 // Funciones del carrito
 import {
@@ -144,6 +145,8 @@ function App() {
       <Routes>
         {/* Página de inicio */}
         <Route path="/" element={<Inicio onAgregar={irAlDetalle} />} />
+
+        <Route path="/admin/inventario" element={<AdminInventario />} />
 
         {/* Catálogo de productos */}
         <Route

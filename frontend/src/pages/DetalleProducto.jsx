@@ -2,6 +2,7 @@ import { Link, useParams } from "react-router-dom";
 import productosBase from "../data/productos.js";
 import { useEffect, useState } from "react";
 import { obtenerTallasPorCategoria } from "../utils/tallas";
+import { cargarInventario } from "../utils/inventario";
 
 function DetalleProducto({ onAgregar }) {
   // Obtener el código del producto desde la URL
@@ -30,6 +31,17 @@ function DetalleProducto({ onAgregar }) {
   }
 
   const tallasDisponibles = obtenerTallasPorCategoria(producto.categoria);
+
+  // Leer el inventario guardado por el administrador
+  const inventarioGuardado = cargarInventario();
+
+  // Obtener las existencias del producto actual
+  const stockPorTalla = inventarioGuardado[producto.codigo] ?? {};
+
+  // Consultar las unidades de la talla seleccionada
+  const stockTalla = tallaSeleccionada
+    ? stockPorTalla[tallaSeleccionada]
+    : undefined;
 
   // Buscar cuatro productos de la misma categoría
   const relacionados = productosBase
@@ -105,9 +117,28 @@ function DetalleProducto({ onAgregar }) {
               <p className="fw-bold">Talla única</p>
             )}
 
-            <p className="text-secondary mt-2">
-              Stock total del producto: {producto.stock}
-            </p>
+            {tallasDisponibles.length > 0 ? (
+              tallaSeleccionada ? (
+                stockTalla !== undefined ? (
+                  <p className="text-success fw-bold mt-2">
+                    ✅ Stock disponible en talla {tallaSeleccionada}:{" "}
+                    {stockTalla} unidades
+                  </p>
+                ) : (
+                  <p className="text-warning fw-bold mt-2">
+                    Stock por talla pendiente de configurar.
+                  </p>
+                )
+              ) : (
+                <p className="text-secondary mt-2">
+                  Selecciona una talla para consultar su disponibilidad.
+                </p>
+              )
+            ) : (
+              <p className="text-success fw-bold mt-2">
+                ✅ Stock disponible: {producto.stock} unidades
+              </p>
+            )}
           </div>
 
           <button
@@ -115,7 +146,8 @@ function DetalleProducto({ onAgregar }) {
             className="btn btn-danger me-3 mb-4"
             disabled={
               producto.stock <= 0 ||
-              (tallasDisponibles.length > 0 && !tallaSeleccionada)
+              (tallasDisponibles.length > 0 &&
+                (!tallaSeleccionada || stockTalla === 0))
             }
             onClick={() => onAgregar(producto, tallaSeleccionada || null)}
           >
