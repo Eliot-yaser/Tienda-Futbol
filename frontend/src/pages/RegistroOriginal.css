@@ -1,0 +1,166 @@
+/* Formulario original de Rey del Balón */
+
+.registro-pagina.registro-original-pagina {
+  display: flex;
+  justify-content: flex-start;
+  align-items: stretch;
+  padding: 0;
+  min-height: calc(100vh - 72px);
+}
+
+.registro-original-panel {
+  box-sizing: border-box;
+  flex: 0 0 300px;
+  width: 300px;
+  max-width: 100%;
+  min-height: inherit;
+  margin: 0;
+  padding: 20px 25px 30px;
+  background: #ffffff;
+  border-radius: 0;
+  box-shadow: 8px 0 24px rgba(0, 0, 0, 0.12);
+  color: #10213c;
+}
+
+.registro-original-panel h1 {
+  margin: 0 0 15px;
+  font-size: 23px;
+  font-weight: 800;
+  color: #10213c;
+}
+
+.registro-original-descripcion {
+  margin: 0 0 25px;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.registro-original-panel form {
+  display: flex;
+  flex-direction: column;
+  gap: 23px;
+}
+
+.registro-original-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.registro-original-grupo label {
+  margin: 0;
+  color: #10213c;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.registro-original-grupo input,
+.registro-original-grupo select {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  min-height: 40px;
+  padding: 9px 12px;
+  font-size: 13px;
+  color: #17243a;
+  background-color: #ffffff;
+  border: 1px solid #d6e0ed;
+  border-radius: 5px;
+  outline: none;
+}
+
+.registro-original-grupo input::placeholder {
+  color: #73839a;
+  opacity: 1;
+}
+
+.registro-original-grupo input:focus,
+.registro-original-grupo select:focus {
+  border-color: #e11d48;
+  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.1);
+}
+
+.registro-original-grupo select:disabled {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.registro-original-grupo .registro-original-invalido {
+  border-color: #dc2626;
+}
+
+.registro-original-error {
+  display: block;
+  color: #dc2626;
+  font-size: 12px;
+}
+
+.registro-original-boton {
+  width: 100%;
+  min-height: 45px;
+  margin-top: 20px;
+  padding: 12px 16px;
+  color: white;
+  background: #df1245;
+  border: none;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.registro-original-boton:hover {
+  background: #bd103a;
+}
+
+.registro-original-boton:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+@media (max-width: 575px) {
+  .registro-original-panel {
+    flex-basis: 100%;
+    width: 100%;
+    max-width: none;
+    box-shadow: none;
+  }
+}
+
+/* =========================================
+   CENTRAR FORMULARIO DE REGISTRO
+========================================= */
+
+.registro-pagina.registro-original-pagina {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+
+  min-height: calc(100vh - 100px);
+  padding: 35px 16px;
+}
+
+.registro-original-panel {
+  flex: 0 1 420px;
+  width: 100%;
+  max-width: 420px;
+  min-height: auto;
+
+  padding: 30px;
+  margin: 0 auto;
+
+  border-radius: 12px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.25);
+}
+
+@media (max-width: 575px) {
+  .registro-original-panel {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: 420px;
+    padding: 22px;
+  }
+}

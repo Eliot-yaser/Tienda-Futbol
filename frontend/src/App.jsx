@@ -607,7 +607,10 @@ function App() {
         />
 
         {/* Registro */}
-        <Route path="/registro" element={<Registro />} />
+        <Route
+          path="/registro"
+          element={<Registro onRegistro={manejarInicioSesion} />}
+        />
 
         {/* Inicio de sesión */}
         <Route
