@@ -2,17 +2,24 @@ import Navbar from "./components/Navbar";
 import ProductoCard from "./components/ProductoCard";
 import productosBase from "./data/productos";
 import { useState, useEffect } from "react";
+import { Routes, Route } from "react-router-dom";
+import Inicio from "./pages/Inicio";
+import Carrito from "./pages/Carrito";
+import Registro from "./pages/Registro";
 
 function App() {
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("Todas");
+  // Recuperar el carrito desde localStorage
   const [carrito, setCarrito] = useState(() => {
     try {
       const carritoGuardado = localStorage.getItem("carrito-react");
-
       return carritoGuardado ? JSON.parse(carritoGuardado) : [];
     } catch {
       return [];
     }
   });
+
+  // Guardar el carrito cuando cambie
   useEffect(() => {
     localStorage.setItem("carrito-react", JSON.stringify(carrito));
   }, [carrito]);
@@ -66,88 +73,98 @@ function App() {
   const cantidadTotal = carrito.reduce((total, producto) => {
     return total + producto.cantidad;
   }, 0);
+  const categorias = [
+    "Todas",
+    ...new Set(productosBase.map((producto) => producto.categoria)),
+  ];
+
+  const productosFiltrados =
+    categoriaSeleccionada === "Todas"
+      ? productosBase
+      : productosBase.filter(
+          (producto) => producto.categoria === categoriaSeleccionada,
+        );
 
   return (
     <>
       <Navbar />
 
-      <main id="inicio" className="container py-5">
-        <h1>Bienvenido a Rey del Balón</h1>
+      <Routes>
+        {/* Página de inicio */}
+        <Route path="/" element={<Inicio />} />
 
-        <p>Encuentra las mejores camisetas, balones y accesorios de fútbol.</p>
+        {/* Página de productos */}
+        <Route
+          path="/productos"
+          element={
+            <main className="container py-5">
+              <h1>Bienvenido a Rey del Balón</h1>
 
-        <p className="fw-bold">🛒 Productos en el carrito: {cantidadTotal}</p>
+              <p>
+                Encuentra las mejores camisetas, balones y accesorios de fútbol.
+              </p>
 
-        {carrito.length > 0 && (
-          <div className="mt-4">
-            <h2 className="h5">Tu carrito de compras</h2>
+              <p className="fw-bold">
+                🛒 Productos en el carrito: {cantidadTotal}
+              </p>
 
-            <ul className="list-group">
-              {carrito.map((producto, indice) => (
-                <li
-                  key={producto.codigo}
-                  className="list-group-item d-flex justify-content-between align-items-center gap-3 flex-wrap"
-                >
-                  <span>
-                    {producto.nombre} - $
-                    {producto.precio.toLocaleString("es-CL")} c/u
-                  </span>
+              {/* Catálogo de productos */}
+              <section id="productos" className="mt-5">
+                <h2>Nuestros productos</h2>
 
-                  <div className="d-flex align-items-center gap-2">
-                    <button
-                      type="button"
-                      className="btn btn-outline-secondary btn-sm"
-                      onClick={() => cambiarCantidad(producto.codigo, -1)}
-                      disabled={producto.cantidad === 1}
+                {/* Filtro de categorías */}
+                <div className="mb-3">
+                  <label htmlFor="categoria" className="form-label">
+                    Filtrar por categoría:
+                  </label>
+
+                  <select
+                    id="categoria"
+                    className="form-select"
+                    value={categoriaSeleccionada}
+                    onChange={(e) => setCategoriaSeleccionada(e.target.value)}
+                  >
+                    {categorias.map((categoria) => (
+                      <option key={categoria} value={categoria}>
+                        {categoria}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="row g-3 mt-3">
+                  {productosFiltrados.map((producto) => (
+                    <div
+                      className="col-12 col-md-6 col-lg-4"
+                      key={producto.codigo}
                     >
-                      -
-                    </button>
-
-                    <span>{producto.cantidad}</span>
-
-                    <button
-                      type="button"
-                      className="btn btn-outline-secondary btn-sm"
-                      onClick={() => cambiarCantidad(producto.codigo, 1)}
-                    >
-                      +
-                    </button>
-
-                    <button
-                      type="button"
-                      className="btn btn-outline-danger btn-sm"
-                      onClick={() => eliminarDelCarrito(indice)}
-                    >
-                      Eliminar
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-
-            <p className="fw-bold mt-3">
-              Total de la compra: ${totalCarrito.toLocaleString("es-CL")}
-            </p>
-          </div>
-        )}
-
-        <section id="productos" className="mt-5">
-          <h2>Nuestros productos</h2>
-
-          <div className="row g-3 mt-3">
-            {productosBase.slice(0, 6).map((producto) => (
-              <div className="col-12 col-md-6 col-lg-4" key={producto.codigo}>
-                <ProductoCard
-                  nombre={producto.nombre}
-                  precio={producto.precio}
-                  imagen={producto.imagen}
-                  onAgregar={() => agregarAlCarrito(producto)}
-                />
-              </div>
-            ))}
-          </div>
-        </section>
-      </main>
+                      <ProductoCard
+                        nombre={producto.nombre}
+                        precio={producto.precio}
+                        imagen={producto.imagen}
+                        onAgregar={() => agregarAlCarrito(producto)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </main>
+          }
+        />
+        <Route
+          path="/carrito"
+          element={
+            <Carrito
+              carrito={carrito}
+              cantidadTotal={cantidadTotal}
+              totalCarrito={totalCarrito}
+              cambiarCantidad={cambiarCantidad}
+              eliminarDelCarrito={eliminarDelCarrito}
+            />
+          }
+        />
+        <Route path="/registro" element={<Registro />} />
+      </Routes>
     </>
   );
 }

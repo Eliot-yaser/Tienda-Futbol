@@ -1,24 +1,27 @@
+import { Link } from "react-router-dom";
+
 function Navbar() {
   return (
     <header className="bg-dark text-white py-3">
-      <div className="container d-flex flex-column flex-md-row justify-content-between align-items-center">
-
+      <div className="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
         <h2 className="mb-0">Rey del Balón ⚽</h2>
 
         <nav className="d-flex gap-4">
-          <a href="#inicio" className="text-white text-decoration-none">
+          <Link to="/" className="text-white text-decoration-none">
             Inicio
-          </a>
+          </Link>
 
-          <a href="#productos" className="text-white text-decoration-none">
+          <Link to="/productos" className="text-white text-decoration-none">
             Productos
-          </a>
+          </Link>
 
-          <a href="#carrito" className="text-white text-decoration-none">
+          <Link to="/carrito" className="text-white text-decoration-none">
             Carrito
-          </a>
+          </Link>
+          <Link to="/registro" className="text-white text-decoration-none">
+            Registro
+          </Link>
         </nav>
-
       </div>
     </header>
   );
