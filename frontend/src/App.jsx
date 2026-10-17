@@ -20,6 +20,7 @@ import DetalleProducto from "./pages/DetalleProducto";
 import AdminInventario from "./pages/AdminInventario";
 import AdminVentas from "./pages/AdminVentas";
 import AdminDashboard from "./pages/AdminDashboard";
+import VendedorDashboard from "./pages/VendedorDashboard";
 import AdminUsuarios from "./pages/AdminUsuarios";
 import { inicializarUsuarios } from "./utils/usuarios";
 
@@ -505,32 +506,12 @@ function App() {
           }
         />
 
-        {/* Panel exclusivo del vendedor */}
+        {/* Panel exclusivo del vendedor: consulta sin permisos administrativos */}
         <Route
           path="/vendedor"
           element={
             <RutaProtegida usuario={usuario} rolPermitido="Vendedor">
-              <main className="container py-5">
-                <div className="bg-dark text-white rounded-4 p-4 mb-4">
-                  <h1>📋 Panel de Vendedor</h1>
-                  <p className="mb-0">Bienvenido a Rey del Balón.</p>
-                </div>
-
-                <div className="card border-0 shadow-sm">
-                  <div className="card-body p-4">
-                    <h2 className="h4">Interfaz en preparación</h2>
-
-                    <p className="text-secondary">
-                      Próximamente incorporaremos las funcionalidades del
-                      vendedor según la versión original.
-                    </p>
-
-                    <Link to="/productos" className="btn btn-dark">
-                      Ver productos
-                    </Link>
-                  </div>
-                </div>
-              </main>
+              <VendedorDashboard />
             </RutaProtegida>
           }
         />

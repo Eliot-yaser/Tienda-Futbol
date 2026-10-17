@@ -1,0 +1,37 @@
+/* Estilos aislados del panel del vendedor: no modifican el resto de la tienda. */
+.vendedor-panel .vendedor-encabezado {
+  border-bottom: 4px solid #e91e55;
+}
+
+.vendedor-panel .vendedor-indicador,
+.vendedor-panel .vendedor-contenido {
+  border: 1px solid #e9edf2;
+  border-radius: 0.8rem;
+}
+
+.vendedor-panel .vendedor-tabla {
+  min-width: 820px;
+}
+
+.vendedor-panel .vendedor-tallas {
+  min-width: 200px;
+  max-width: 300px;
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.vendedor-panel .form-label {
+  font-weight: 600;
+}
+
+@media (max-width: 576px) {
+  .vendedor-panel .btn-group {
+    width: 100%;
+  }
+  .vendedor-panel .btn-group .btn {
+    flex: 1;
+  }
+  .vendedor-panel .vendedor-tabla {
+    font-size: 0.875rem;
+  }
+}
