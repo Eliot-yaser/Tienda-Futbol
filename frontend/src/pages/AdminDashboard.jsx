@@ -16,6 +16,18 @@ function cargarVentas() {
   }
 }
 
+/* Contar los usuarios registrados */
+function cargarCantidadUsuarios() {
+  try {
+    const datos = localStorage.getItem("usuariosRegistrados");
+    const usuarios = datos ? JSON.parse(datos) : [];
+
+    return Array.isArray(usuarios) ? usuarios.length : 0;
+  } catch {
+    return 0;
+  }
+}
+
 // Mostrar los precios en pesos chilenos
 function formatearPrecio(valor) {
   return `$${Number(valor || 0).toLocaleString("es-CL")}`;
@@ -88,6 +100,7 @@ function obtenerAlertas(inventario) {
 function AdminDashboard() {
   const [inventario] = useState(cargarInventario);
   const [ventas] = useState(cargarVentas);
+  const [totalUsuarios] = useState(cargarCantidadUsuarios);
 
   // Controlar cuál sección está desplegada
   const [seccionAbierta, setSeccionAbierta] =
@@ -126,7 +139,7 @@ function AdminDashboard() {
     {
       id: "usuarios",
       nombre: "Usuarios registrados",
-      valor: "Pendiente",
+      valor: totalUsuarios,
       icono: "👥",
       color: "#188553",
       texto: "#ffffff",
@@ -320,12 +333,18 @@ function AdminDashboard() {
               👥 Gestión de usuarios
             </h2>
 
-            <p className="mb-0">
-              Este módulo está pendiente de implementación.
-              Más adelante recuperaremos los usuarios,
-              sus roles y los controles de administración
-              de la tienda original.
-            </p>
+           
+          <p className="text-secondary">
+            Consulta los usuarios registrados en la tienda,
+            sus correos electrónicos y los roles asignados.
+          </p>
+
+          <Link
+            to="/admin/usuarios"
+            className="btn btn-success fw-bold"
+          >
+            👥 Ver usuarios registrados →
+          </Link>
           </div>
         </section>
       )}
@@ -368,7 +387,14 @@ function AdminDashboard() {
             Accesos rápidos
           </h2>
 
-          <div className="d-flex flex-wrap gap-3">
+          <div className="d-flex flex-wrap gap-3">            
+            <Link
+              to="/admin/usuarios"
+              className="btn btn-primary"
+            >
+              👥 Administrar usuarios
+            </Link>
+
             <Link
               to="/admin/inventario"
               className="btn btn-dark"

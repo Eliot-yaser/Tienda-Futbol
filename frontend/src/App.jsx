@@ -20,6 +20,7 @@ import DetalleProducto from "./pages/DetalleProducto";
 import AdminInventario from "./pages/AdminInventario";
 import AdminVentas from "./pages/AdminVentas";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminUsuarios from "./pages/AdminUsuarios";
 import { inicializarUsuarios } from "./utils/usuarios";
 
 // Funciones del carrito
@@ -467,6 +468,18 @@ function App() {
         <Route path="/" element={<Inicio onAgregar={irAlDetalle} />} />
 
         {/* Paneles exclusivos del administrador */}
+
+        
+      {/* Listado de usuarios del administrador */}
+      <Route
+        path="/admin/usuarios"
+        element={
+          <RutaProtegida usuario={usuario} rolPermitido="Administrador">
+            <AdminUsuarios />
+          </RutaProtegida>
+        }
+      />
+
         <Route
           path="/admin/inventario"
           element={
