@@ -131,3 +131,100 @@
     font-size: 0.85rem;
   }
 }
+
+/* =========================================
+   MENÚ DEL USUARIO CONECTADO
+========================================= */
+
+.rey-usuario-menu {
+  position: relative;
+}
+
+.rey-usuario-boton {
+  list-style: none;
+  background: #e11d48;
+  color: white;
+  padding: 11px 16px;
+  border-radius: 25px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s ease;
+}
+
+.rey-usuario-boton::-webkit-details-marker {
+  display: none;
+}
+
+.rey-usuario-boton:hover {
+  background: #be123c;
+}
+
+.rey-usuario-boton:focus-visible {
+  outline: 3px solid #fda4af;
+  outline-offset: 3px;
+}
+
+.rey-usuario-desplegable {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 12px);
+  z-index: 1000;
+  width: 250px;
+  max-width: calc(100vw - 24px);
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  color: #1e293b;
+}
+
+.rey-usuario-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.rey-usuario-info strong {
+  color: #111827;
+}
+
+.rey-usuario-info span {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.rey-usuario-enlace,
+.rey-usuario-salir {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  text-align: left;
+  text-decoration: none;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.rey-usuario-enlace {
+  color: #1e293b;
+}
+
+.rey-usuario-enlace:hover {
+  background: #f1f5f9;
+  color: #e11d48;
+}
+
+.rey-usuario-salir {
+  color: #be123c;
+}
+
+.rey-usuario-salir:hover {
+  background: #fff1f2;
+}

@@ -1,19 +1,32 @@
 import { NavLink } from "react-router-dom";
 import "./Navbar.css";
 
-function Navbar({ cantidadTotal }) {
+function Navbar({ cantidadTotal, usuario, onCerrarSesion }) {
   const claseEnlace = ({ isActive }) =>
     isActive ? "rey-enlace activo" : "rey-enlace";
+
+  // Determinar qué panel corresponde al usuario
+  const rutaPanel =
+    usuario?.rol === "Administrador"
+      ? "/admin"
+      : usuario?.rol === "Vendedor"
+        ? "/vendedor"
+        : null;
+
+  const nombrePanel =
+    usuario?.rol === "Administrador"
+      ? "⚙️ Panel de Administración"
+      : "📋 Panel de Vendedor";
 
   return (
     <header className="rey-navbar">
       <div className="container rey-navbar-contenido">
-        {/* Izquierda: logo */}
+        {/* Logo */}
         <NavLink to="/" className="rey-logo">
           Rey del Balón ⚽
         </NavLink>
 
-        {/* Centro: páginas principales */}
+        {/* Navegación principal */}
         <nav className="rey-menu" aria-label="Menú principal">
           <NavLink to="/" end className={claseEnlace}>
             Inicio
@@ -36,15 +49,51 @@ function Navbar({ cantidadTotal }) {
           </NavLink>
         </nav>
 
-        {/* Derecha: carrito y registro */}
+        {/* Carrito y usuario */}
         <div className="rey-acciones">
           <NavLink to="/carrito" className="rey-carrito">
             🛒 Carrito ({cantidadTotal})
           </NavLink>
 
-          <NavLink to="/login" className="rey-registro">
-            Iniciar Sesión
-          </NavLink>
+          {usuario ? (
+            <details className="rey-usuario-menu">
+              <summary className="rey-usuario-boton">
+                👤 Hola, {usuario.nombre}
+                <span aria-hidden="true"> ▾</span>
+              </summary>
+
+              <div className="rey-usuario-desplegable">
+                {/* Rol del usuario */}
+                <div className="rey-usuario-info">
+                  <strong>
+                    {usuario.nombre} {usuario.apellidos || ""}
+                  </strong>
+
+                  <span>Rol: {usuario.rol || "Cliente"}</span>
+                </div>
+
+                {/* Acceso al panel administrativo o vendedor */}
+                {rutaPanel && (
+                  <NavLink to={rutaPanel} className="rey-usuario-enlace">
+                    {nombrePanel}
+                  </NavLink>
+                )}
+
+                {/* Cerrar sesión */}
+                <button
+                  type="button"
+                  className="rey-usuario-salir"
+                  onClick={onCerrarSesion}
+                >
+                  🚪 Cerrar Sesión
+                </button>
+              </div>
+            </details>
+          ) : (
+            <NavLink to="/login" className="rey-registro">
+              Iniciar Sesión
+            </NavLink>
+          )}
         </div>
       </div>
     </header>

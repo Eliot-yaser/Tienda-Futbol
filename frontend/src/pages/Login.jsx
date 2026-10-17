@@ -1,24 +1,28 @@
-
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { inicializarUsuarios } from "../utils/usuarios";
 import "./Registro.css";
 
-function Login() {
+function Login({ onLogin }) {
+  const navigate = useNavigate();
+
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
   const [errores, setErrores] = useState({});
   const [mensaje, setMensaje] = useState("");
 
+  // Validar los datos e iniciar sesión
   const validarLogin = (e) => {
     e.preventDefault();
 
     const nuevosErrores = {};
     const formatoCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+    const correoLimpio = correo.trim().toLowerCase();
+
     // Validar correo
-    if (!formatoCorreo.test(correo.trim())) {
-      nuevosErrores.correo =
-        "Ingresa un correo electrónico válido.";
+    if (!formatoCorreo.test(correoLimpio)) {
+      nuevosErrores.correo = "Ingresa un correo electrónico válido.";
     }
 
     // Validar contraseña
@@ -30,26 +34,77 @@ function Login() {
     setErrores(nuevosErrores);
     setMensaje("");
 
-    if (Object.keys(nuevosErrores).length === 0) {
-      setMensaje(
-        "Datos validados. El inicio de sesión real aún no está disponible."
-      );
+    if (Object.keys(nuevosErrores).length > 0) {
+      return;
+    }
+
+    try {
+      // Crear las cuentas de prueba que todavía no existan
+      inicializarUsuarios();
+
+      // Obtener usuarios guardados
+      const datos = localStorage.getItem("usuariosRegistrados");
+
+      const usuarios = datos ? JSON.parse(datos) : [];
+
+      if (!Array.isArray(usuarios)) {
+        throw new Error("La lista de usuarios no es válida.");
+      }
+
+      // Buscar correo y contraseña
+      const usuarioEncontrado = usuarios.find((usuario) => {
+        const emailUsuario = String(usuario.email || usuario.correo || "")
+          .trim()
+          .toLowerCase();
+
+        const passwordUsuario = String(usuario.pass ?? usuario.password ?? "");
+
+        return emailUsuario === correoLimpio && passwordUsuario === password;
+      });
+
+      // Si no existe o la contraseña es incorrecta
+      if (!usuarioEncontrado) {
+        setErrores({
+          correo: "El correo o la contraseña son incorrectos.",
+        });
+
+        return;
+      }
+
+      // Guardar solamente los datos necesarios para la sesión
+      const usuarioSesion = {
+        nombre: usuarioEncontrado.nombre,
+        apellidos: usuarioEncontrado.apellidos || "",
+        email: correoLimpio,
+        rol: usuarioEncontrado.rol || "Cliente",
+      };
+
+      localStorage.setItem("usuarioLogueado", JSON.stringify(usuarioSesion));
+      // Avisar a React que cambió el usuario conectado
+      onLogin(usuarioSesion);
+
+      // Redirigir según el rol
+      if (usuarioSesion.rol === "Administrador") {
+        navigate("/admin", { replace: true });
+      } else if (usuarioSesion.rol === "Vendedor") {
+        navigate("/vendedor", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
+    } catch (error) {
+      console.error("Error al iniciar sesión:", error);
+
+      setMensaje("No fue posible iniciar sesión. Intenta nuevamente.");
     }
   };
 
   return (
     <main className="registro-pagina">
-      <form
-        className="registro-tarjeta"
-        onSubmit={validarLogin}
-        noValidate
-      >
-        <h1 className="registro-titulo">
-          ¡Hola de nuevo!
-        </h1>
+      <form className="registro-tarjeta" onSubmit={validarLogin} noValidate>
+        <h1 className="registro-titulo">¡Hola de nuevo!</h1>
 
         <p className="text-secondary text-center mb-4">
-          Ingresa a tu cuenta para continuar tus compras.
+          Ingresa a tu cuenta para continuar.
         </p>
 
         {/* Correo electrónico */}
@@ -61,15 +116,16 @@ function Login() {
           <input
             id="login-correo"
             type="email"
-            className={`form-control ${
-              errores.correo ? "is-invalid" : ""
-            }`}
+            className={`form-control ${errores.correo ? "is-invalid" : ""}`}
             maxLength={100}
             placeholder="ejemplo@duoc.cl"
             value={correo}
             onChange={(e) => {
               setCorreo(e.target.value);
-              setErrores({ ...errores, correo: "" });
+              setErrores((anterior) => ({
+                ...anterior,
+                correo: "",
+              }));
               setMensaje("");
             }}
           />
@@ -90,15 +146,16 @@ function Login() {
           <input
             id="login-password"
             type="password"
-            className={`form-control ${
-              errores.password ? "is-invalid" : ""
-            }`}
+            className={`form-control ${errores.password ? "is-invalid" : ""}`}
             maxLength={10}
             placeholder="••••••••"
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);
-              setErrores({ ...errores, password: "" });
+              setErrores((anterior) => ({
+                ...anterior,
+                password: "",
+              }));
               setMensaje("");
             }}
           />
@@ -110,14 +167,14 @@ function Login() {
           )}
         </div>
 
-        {/* Botón de inicio de sesión */}
+        {/* Botón de ingreso */}
         <button type="submit" className="registro-boton">
           INGRESAR
         </button>
 
-        {/* Aviso de validación */}
+        {/* Mensaje de error general */}
         {mensaje && (
-          <div className="alert alert-info mt-3" role="status">
+          <div className="alert alert-danger mt-3" role="alert">
             {mensaje}
           </div>
         )}

@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import "./Carrito.css";
 
@@ -9,30 +9,80 @@ function Carrito({
   cambiarCantidad,
   eliminarDelCarrito,
   vaciarCarrito,
+  confirmarCompra,
 }) {
-  // Referencia a la ventana de confirmación
-  const dialogRef = useRef(null);
+  // Ventanas de confirmación
+  const dialogVaciarRef = useRef(null);
+  const dialogPagoRef = useRef(null);
 
-  // Abrir la ventana
-  const abrirConfirmacion = () => {
-    dialogRef.current?.showModal();
+  // Mensajes de compra
+  const [errorCompra, setErrorCompra] = useState("");
+  const [mensajeCompra, setMensajeCompra] = useState("");
+
+  // Abrir confirmación para vaciar carrito
+  const abrirConfirmacionVaciar = () => {
+    dialogVaciarRef.current?.showModal();
   };
 
-  // Cerrar sin eliminar nada
+  // Cancelar vaciado
   const cancelarVaciado = () => {
-    dialogRef.current?.close();
+    dialogVaciarRef.current?.close();
   };
 
-  // Confirmar y vaciar el carrito
+  // Confirmar vaciado
   const confirmarVaciado = () => {
     vaciarCarrito();
-    dialogRef.current?.close();
+    dialogVaciarRef.current?.close();
+  };
+
+  // Abrir confirmación de compra
+  const abrirConfirmacionPago = () => {
+    setErrorCompra("");
+    dialogPagoRef.current?.showModal();
+  };
+
+  // Cancelar compra
+  const cancelarCompra = () => {
+    dialogPagoRef.current?.close();
+    setErrorCompra("");
+  };
+
+  // Confirmar compra simulada
+  const realizarCompra = () => {
+    const resultado = confirmarCompra();
+
+    if (resultado.exito) {
+      setMensajeCompra(resultado.mensaje);
+      setErrorCompra("");
+      dialogPagoRef.current?.close();
+    } else {
+      setErrorCompra(resultado.mensaje);
+    }
   };
 
   return (
     <>
       <main className="container py-5 carrito-pagina">
         <h1>Mi carrito de compras 🛒</h1>
+
+        {/* Mensaje cuando una compra se completa */}
+        {mensajeCompra && (
+          <div
+            className="alert alert-success mt-4"
+            role="status"
+          >
+            <h2 className="h5 fw-bold">
+              ✅ ¡Compra confirmada!
+            </h2>
+
+            <p className="mb-1">{mensajeCompra}</p>
+
+            <p className="mb-0">
+              Tu compra de demostración fue registrada
+              y el inventario se actualizó.
+            </p>
+          </div>
+        )}
 
         <p className="carrito-contador">
           Productos en el carrito: {cantidadTotal}
@@ -44,12 +94,16 @@ function Carrito({
 
             <p>¡Explora nuestros productos de fútbol!</p>
 
-            <Link to="/productos" className="carrito-volver">
+            <Link
+              to="/productos"
+              className="carrito-volver"
+            >
               Ver productos
             </Link>
           </div>
         ) : (
           <>
+            {/* Tabla del carrito */}
             <div className="table-responsive carrito-tabla-contenedor">
               <table className="carrito-tabla">
                 <thead>
@@ -96,9 +150,7 @@ function Carrito({
                         <div className="carrito-cantidad">
                           <button
                             type="button"
-                            aria-label={`Disminuir cantidad de ${
-                              producto.nombre
-                            }, talla ${producto.talla ?? "única"}`}
+                            aria-label={`Disminuir cantidad de ${producto.nombre}, talla ${producto.talla ?? "única"}`}
                             onClick={() =>
                               cambiarCantidad(
                                 producto.codigo,
@@ -115,9 +167,7 @@ function Carrito({
 
                           <button
                             type="button"
-                            aria-label={`Aumentar cantidad de ${
-                              producto.nombre
-                            }, talla ${producto.talla ?? "única"}`}
+                            aria-label={`Aumentar cantidad de ${producto.nombre}, talla ${producto.talla ?? "única"}`}
                             onClick={() =>
                               cambiarCantidad(
                                 producto.codigo,
@@ -139,12 +189,14 @@ function Carrito({
                         ).toLocaleString("es-CL")}
                       </td>
 
-                      {/* Eliminar producto individual */}
+                      {/* Eliminar */}
                       <td>
                         <button
                           type="button"
                           className="carrito-eliminar"
-                          onClick={() => eliminarDelCarrito(indice)}
+                          onClick={() =>
+                            eliminarDelCarrito(indice)
+                          }
                         >
                           Eliminar
                         </button>
@@ -168,9 +220,17 @@ function Carrito({
                 <button
                   type="button"
                   className="carrito-boton-vaciar"
-                  onClick={abrirConfirmacion}
+                  onClick={abrirConfirmacionVaciar}
                 >
                   🗑️ Vaciar carrito
+                </button>
+
+                <button
+                  type="button"
+                  className="carrito-boton-pago"
+                  onClick={abrirConfirmacionPago}
+                >
+                  💳 Proceder al Pago
                 </button>
               </div>
 
@@ -181,9 +241,9 @@ function Carrito({
           </>
         )}
 
-        {/* Ventana personalizada de confirmación */}
+        {/* Ventana para vaciar carrito */}
         <dialog
-          ref={dialogRef}
+          ref={dialogVaciarRef}
           className="carrito-dialogo"
           aria-labelledby="titulo-vaciar"
           aria-describedby="descripcion-vaciar"
@@ -198,8 +258,8 @@ function Carrito({
             </h2>
 
             <p id="descripcion-vaciar">
-              Se eliminarán todos los productos y las
-              tallas seleccionadas.
+              Se eliminarán todos los productos
+              y las tallas seleccionadas.
               ¿Deseas continuar?
             </p>
 
@@ -218,6 +278,63 @@ function Carrito({
                 onClick={confirmarVaciado}
               >
                 Sí, vaciar carrito
+              </button>
+            </div>
+          </div>
+        </dialog>
+
+        {/* Ventana de confirmación de compra */}
+        <dialog
+          ref={dialogPagoRef}
+          className="carrito-dialogo carrito-dialogo-pago"
+          aria-labelledby="titulo-pago"
+          aria-describedby="descripcion-pago"
+        >
+          <div className="carrito-dialogo-contenido">
+            <div className="carrito-dialogo-icono">
+              🛍️
+            </div>
+
+            <h2 id="titulo-pago">
+              ¿Confirmar compra?
+            </h2>
+
+            <p id="descripcion-pago">
+              Estás a punto de confirmar una compra
+              de demostración.
+              Se descontarán las unidades del inventario.
+              No se realizará ningún cobro real.
+            </p>
+
+            <h3 className="h4 fw-bold mb-4">
+              Total: ${totalCarrito.toLocaleString("es-CL")}
+            </h3>
+
+            {/* Error por falta de stock */}
+            {errorCompra && (
+              <div
+                className="alert alert-danger text-start"
+                role="alert"
+              >
+                ⚠️ {errorCompra}
+              </div>
+            )}
+
+            <div className="carrito-dialogo-botones">
+              <button
+                type="button"
+                className="carrito-dialogo-cancelar"
+                onClick={cancelarCompra}
+              >
+                Cancelar
+              </button>
+
+              <button
+                type="button"
+                className="carrito-dialogo-confirmar"
+                onClick={realizarCompra}
+              >
+                Confirmar compra
               </button>
             </div>
           </div>
