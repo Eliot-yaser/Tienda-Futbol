@@ -1,7 +1,7 @@
-
+import { Link } from "react-router-dom";
 import "./ProductoCard.css";
 
-function ProductoCard({ nombre, precio, imagen, onAgregar }) {
+function ProductoCard({ codigo, nombre, precio, imagen, onAgregar }) {
   return (
     <article className="card h-100 rey-producto">
       <img
@@ -11,7 +11,15 @@ function ProductoCard({ nombre, precio, imagen, onAgregar }) {
       />
 
       <div className="card-body d-flex flex-column text-center">
-        <h3 className="card-title h5">{nombre}</h3>
+        <h3 className="card-title h5">
+          {codigo ? (
+            <Link to={`/producto/${codigo}`} className="rey-producto-link">
+              {nombre}
+            </Link>
+          ) : (
+            nombre
+          )}
+        </h3>
 
         <p className="card-text rey-producto-precio">
           Precio: ${precio.toLocaleString("es-CL")}

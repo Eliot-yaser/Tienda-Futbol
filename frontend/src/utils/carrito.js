@@ -10,18 +10,28 @@ export function calcularCantidadTotal(carrito) {
   }, 0);
 }
 
-export function agregarProductoAlCarrito(carrito, producto) {
-  const existente = carrito.find((item) => item.codigo === producto.codigo);
+export function agregarProductoAlCarrito(carrito, producto, talla = null) {
+  const esMismoProducto = (item) =>
+    item.codigo === producto.codigo && (item.talla ?? null) === talla;
 
-  if (existente) {
+  const productoExistente = carrito.some(esMismoProducto);
+
+  if (productoExistente) {
     return carrito.map((item) =>
-      item.codigo === producto.codigo
-        ? { ...item, cantidad: item.cantidad + 1 }
-        : item,
+      esMismoProducto(item) ? { ...item, cantidad: item.cantidad + 1 } : item,
     );
   }
 
-  return [...carrito, { ...producto, cantidad: 1 }];
+  const nuevoProducto = {
+    ...producto,
+    cantidad: 1,
+  };
+
+  if (talla !== null) {
+    nuevoProducto.talla = talla;
+  }
+
+  return [...carrito, nuevoProducto];
 }
 
 // Eliminar un producto del carrito
@@ -30,13 +40,18 @@ export function eliminarProductoDelCarrito(carrito, indiceAEliminar) {
 }
 
 // Cambiar la cantidad de un producto
-export function cambiarCantidadProducto(carrito, codigo, cambio) {
-  return carrito.map((producto) =>
-    producto.codigo === codigo
-      ? {
-          ...producto,
-          cantidad: Math.max(1, producto.cantidad + cambio),
-        }
-      : producto,
-  );
+export function cambiarCantidadProducto(carrito, codigo, cambio, talla = null) {
+  return carrito.map((item) => {
+    const esMismoProducto =
+      item.codigo === codigo && (item.talla ?? null) === talla;
+
+    if (esMismoProducto) {
+      return {
+        ...item,
+        cantidad: Math.max(1, item.cantidad + cambio),
+      };
+    }
+
+    return item;
+  });
 }

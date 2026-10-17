@@ -48,6 +48,7 @@ function Inicio({ onAgregar }) {
               key={producto.codigo}
             >
               <ProductoCard
+                codigo={producto.codigo}
                 nombre={producto.nombre}
                 precio={producto.precio}
                 imagen={producto.imagen}

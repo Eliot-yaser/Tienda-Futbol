@@ -199,3 +199,157 @@
     font-size: 1.5rem;
   }
 }
+
+
+/* =========================================
+   BOTÓN VACIAR CARRITO
+========================================= */
+
+.carrito-acciones {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.carrito-resumen {
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.carrito-boton-vaciar {
+  background: transparent;
+  border: 2px solid #e11d48;
+  color: #e11d48;
+  padding: 11px 20px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.carrito-boton-vaciar:hover {
+  background: #e11d48;
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* =========================================
+   VENTANA DE CONFIRMACIÓN
+========================================= */
+
+.carrito-dialogo {
+  width: calc(100% - 32px);
+  max-width: 440px;
+  padding: 0;
+  border: none;
+  border-radius: 20px;
+  background: white;
+  color: #1e293b;
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+/* Fondo oscuro detrás de la ventana */
+.carrito-dialogo::backdrop {
+  background: rgba(8, 15, 35, 0.7);
+  backdrop-filter: blur(5px);
+}
+
+/* Contenido */
+.carrito-dialogo-contenido {
+  padding: 35px 28px;
+  text-align: center;
+  border-top: 5px solid #e11d48;
+}
+
+/* Ícono */
+.carrito-dialogo-icono {
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 20px;
+  background: #ffe4e9;
+  color: #e11d48;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 34px;
+}
+
+/* Título */
+.carrito-dialogo h2 {
+  font-size: 25px;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 14px;
+}
+
+/* Mensaje */
+.carrito-dialogo p {
+  color: #64748b;
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: 26px;
+}
+
+/* Botones */
+.carrito-dialogo-botones {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.carrito-dialogo-botones button {
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+/* Cancelar */
+.carrito-dialogo-cancelar {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.carrito-dialogo-cancelar:hover {
+  background: #e2e8f0;
+}
+
+/* Confirmar */
+.carrito-dialogo-confirmar {
+  background: #e11d48;
+  color: white;
+  border: 1px solid #e11d48;
+}
+
+.carrito-dialogo-confirmar:hover {
+  background: #be123c;
+  border-color: #be123c;
+}
+
+.carrito-dialogo-botones button:focus-visible {
+  outline: 3px solid #fda4af;
+  outline-offset: 3px;
+}
+
+/* Celulares */
+@media (max-width: 480px) {
+  .carrito-dialogo-contenido {
+    padding: 28px 18px;
+  }
+
+  .carrito-dialogo-botones {
+    flex-direction: column;
+  }
+
+  .carrito-dialogo-botones button {
+    width: 100%;
+  }
+}

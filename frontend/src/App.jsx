@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate } from "react-router-dom";
 
 // Componentes
 import Navbar from "./components/Navbar";
@@ -9,7 +9,6 @@ import ProductoCard from "./components/ProductoCard";
 import productosBase from "./data/productos";
 
 // Páginas
-// Páginas
 import Inicio from "./pages/Inicio";
 import Carrito from "./pages/Carrito";
 import Login from "./pages/Login";
@@ -17,6 +16,7 @@ import Registro from "./pages/Registro";
 import Nosotros from "./pages/Nosotros";
 import Blogs from "./pages/Blogs";
 import Contacto from "./pages/Contacto";
+import DetalleProducto from "./pages/DetalleProducto";
 
 // Funciones del carrito
 import {
@@ -27,10 +27,12 @@ import {
   cambiarCantidadProducto,
 } from "./utils/carrito.js";
 
-// Estilos de notificación
+// Estilos
 import "./Notificacion.css";
 
 function App() {
+  const navigate = useNavigate();
+
   // Estado del filtro de categorías
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("Todas");
 
@@ -42,7 +44,9 @@ function App() {
     try {
       const carritoGuardado = localStorage.getItem("carrito-react");
 
-      return carritoGuardado ? JSON.parse(carritoGuardado) : [];
+      const datos = carritoGuardado ? JSON.parse(carritoGuardado) : [];
+
+      return Array.isArray(datos) ? datos : [];
     } catch {
       return [];
     }
@@ -64,29 +68,38 @@ function App() {
     return () => clearTimeout(temporizador);
   }, [notificacion]);
 
-  // Agregar productos al carrito
-  const agregarAlCarrito = (producto) => {
-    setCarrito((carritoAnterior) =>
-      agregarProductoAlCarrito(carritoAnterior, producto),
-    );
-
-    // Mostrar notificación verde
-    setNotificacion({
-      nombre: producto.nombre,
-    });
+  // Ir al detalle para seleccionar talla
+  const irAlDetalle = (producto) => {
+    navigate(`/producto/${producto.codigo}`);
   };
 
-  // Eliminar un producto del carrito
+  // Agregar el producto con su talla
+  const agregarAlCarrito = (producto, talla = null) => {
+    setCarrito((carritoActual) =>
+      agregarProductoAlCarrito(carritoActual, producto, talla),
+    );
+
+    const descripcionTalla = talla ? ` - Talla ${talla}` : "";
+
+    setNotificacion(`${producto.nombre}${descripcionTalla}`);
+  };
+
+  // Vaciar todos los productos del carrito
+  const vaciarCarrito = () => {
+    setCarrito([]);
+  };
+
+  // Eliminar un producto o una talla del carrito
   const eliminarDelCarrito = (indiceAEliminar) => {
     setCarrito((carritoAnterior) =>
       eliminarProductoDelCarrito(carritoAnterior, indiceAEliminar),
     );
   };
 
-  // Aumentar o disminuir cantidades
-  const cambiarCantidad = (codigo, cambio) => {
+  // Aumentar o disminuir cantidades según código y talla
+  const cambiarCantidad = (codigo, cambio, talla = null) => {
     setCarrito((carritoAnterior) =>
-      cambiarCantidadProducto(carritoAnterior, codigo, cambio),
+      cambiarCantidadProducto(carritoAnterior, codigo, cambio, talla),
     );
   };
 
@@ -102,7 +115,7 @@ function App() {
     ...new Set(productosBase.map((producto) => producto.categoria)),
   ];
 
-  // Filtrar productos según categoría seleccionada
+  // Filtrar productos por categoría
   const productosFiltrados =
     categoriaSeleccionada === "Todas"
       ? productosBase
@@ -122,7 +135,7 @@ function App() {
 
           <div>
             <strong>¡Producto agregado!</strong>
-            <p>{notificacion.nombre} se agregó al carrito.</p>
+            <p>{notificacion} se agregó al carrito.</p>
           </div>
         </div>
       )}
@@ -130,7 +143,7 @@ function App() {
       {/* Rutas de la aplicación */}
       <Routes>
         {/* Página de inicio */}
-        <Route path="/" element={<Inicio onAgregar={agregarAlCarrito} />} />
+        <Route path="/" element={<Inicio onAgregar={irAlDetalle} />} />
 
         {/* Catálogo de productos */}
         <Route
@@ -180,10 +193,11 @@ function App() {
                       key={producto.codigo}
                     >
                       <ProductoCard
+                        codigo={producto.codigo}
                         nombre={producto.nombre}
                         precio={producto.precio}
                         imagen={producto.imagen}
-                        onAgregar={() => agregarAlCarrito(producto)}
+                        onAgregar={() => irAlDetalle(producto)}
                       />
                     </div>
                   ))}
@@ -191,6 +205,12 @@ function App() {
               </section>
             </main>
           }
+        />
+
+        {/* Detalle de producto */}
+        <Route
+          path="/producto/:codigo"
+          element={<DetalleProducto onAgregar={agregarAlCarrito} />}
         />
 
         {/* Carrito de compras */}
@@ -203,6 +223,7 @@ function App() {
               totalCarrito={totalCarrito}
               cambiarCantidad={cambiarCantidad}
               eliminarDelCarrito={eliminarDelCarrito}
+              vaciarCarrito={vaciarCarrito}
             />
           }
         />
@@ -210,15 +231,15 @@ function App() {
         {/* Registro */}
         <Route path="/registro" element={<Registro />} />
 
+        {/* Inicio de sesión */}
         <Route path="/login" element={<Login />} />
 
         {/* Nosotros */}
         <Route path="/nosotros" element={<Nosotros />} />
 
-        {/* Lista principal de blogs */}
+        {/* Blogs */}
         <Route path="/blogs" element={<Blogs />} />
 
-        {/* Detalle de artículos */}
         <Route path="/blogs/:id" element={<Blogs />} />
 
         {/* Contacto */}
