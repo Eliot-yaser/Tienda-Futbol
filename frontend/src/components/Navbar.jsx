@@ -1,27 +1,51 @@
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
+import "./Navbar.css";
 
-function Navbar() {
+function Navbar({ cantidadTotal }) {
+  const claseEnlace = ({ isActive }) =>
+    isActive ? "rey-enlace activo" : "rey-enlace";
+
   return (
-    <header className="bg-dark text-white py-3">
-      <div className="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
-        <h2 className="mb-0">Rey del Balón ⚽</h2>
+    <header className="rey-navbar">
+      <div className="container rey-navbar-contenido">
+        {/* Izquierda: logo */}
+        <NavLink to="/" className="rey-logo">
+          Rey del Balón ⚽
+        </NavLink>
 
-        <nav className="d-flex gap-4">
-          <Link to="/" className="text-white text-decoration-none">
+        {/* Centro: páginas principales */}
+        <nav className="rey-menu" aria-label="Menú principal">
+          <NavLink to="/" end className={claseEnlace}>
             Inicio
-          </Link>
+          </NavLink>
 
-          <Link to="/productos" className="text-white text-decoration-none">
+          <NavLink to="/productos" className={claseEnlace}>
             Productos
-          </Link>
+          </NavLink>
 
-          <Link to="/carrito" className="text-white text-decoration-none">
-            Carrito
-          </Link>
-          <Link to="/registro" className="text-white text-decoration-none">
-            Registro
-          </Link>
+          <NavLink to="/nosotros" className={claseEnlace}>
+            Nosotros
+          </NavLink>
+
+          <NavLink to="/blogs" className={claseEnlace}>
+            Blogs
+          </NavLink>
+
+          <NavLink to="/contacto" className={claseEnlace}>
+            Contacto
+          </NavLink>
         </nav>
+
+        {/* Derecha: carrito y registro */}
+        <div className="rey-acciones">
+          <NavLink to="/carrito" className="rey-carrito">
+            🛒 Carrito ({cantidadTotal})
+          </NavLink>
+
+          <NavLink to="/login" className="rey-registro">
+            Iniciar Sesión
+          </NavLink>
+        </div>
       </div>
     </header>
   );

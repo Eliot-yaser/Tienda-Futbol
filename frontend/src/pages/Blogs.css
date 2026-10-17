@@ -1,0 +1,156 @@
+
+/* Página de Blogs - diseño original */
+
+.blogs-pagina h2 {
+  text-align: center;
+  color: #0f172a;
+  font-size: 2rem;
+  margin-bottom: 2rem;
+}
+
+/* Lista de noticias */
+
+.blogs-pagina .blogs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Tarjetas de noticias */
+
+.blogs-pagina .blog-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+}
+
+.blogs-pagina .blog-card-img {
+  width: 200px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.blogs-pagina .blog-card-content h3 {
+  font-size: 1.4rem;
+  color: #0f172a;
+}
+
+.blogs-pagina .blog-card-content p {
+  color: #64748b;
+  margin: 0.5rem 0 1rem;
+}
+
+/* Botón rosado para ver el artículo */
+
+.blogs-pagina .blog-btn {
+  display: inline-block;
+  background-color: #e11d48;
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.blogs-pagina .blog-btn:hover {
+  background-color: #be123c;
+  color: #ffffff;
+}
+
+/* Página de detalle del blog */
+
+.blogs-pagina .blog-detail-card {
+  max-width: 800px;
+  margin: 0 auto;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.blogs-pagina .blog-detail-img {
+  display: block;
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.blogs-pagina .blog-detail-img-contain {
+  object-fit: contain;
+  background: #f8fafc;
+}
+
+.blogs-pagina .blog-detail-text {
+  color: #1e293b;
+  line-height: 1.8;
+  margin-bottom: 1.5rem;
+}
+
+.blogs-pagina .blog-back-link {
+  display: inline-block;
+  color: #e11d48;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.blogs-pagina .blog-back-link:hover {
+  color: #be123c;
+  text-decoration: underline;
+}
+
+/* Footer */
+
+.blogs-footer {
+  background-color: #1e293b;
+  color: #94a3b8;
+  text-align: center;
+  padding: 2rem;
+  margin-top: 4rem;
+}
+
+.blogs-footer p {
+  margin-bottom: 0;
+}
+
+/* Adaptación para celulares */
+
+@media (max-width: 650px) {
+  .blogs-pagina .blog-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .blogs-pagina .blog-card-img {
+    width: 100%;
+    height: 200px;
+  }
+
+  .blogs-pagina .blog-detail-card {
+    padding: 1.25rem;
+  }
+
+  .blogs-pagina .blog-detail-img {
+    height: 220px;
+  }
+}
+
+/* Ajustar la camiseta dentro de su recuadro */
+.blogs-pagina .blog-card-img-contain {
+  object-fit: contain;
+  padding: 0px;
+  background-color: #f8fafc;
+}

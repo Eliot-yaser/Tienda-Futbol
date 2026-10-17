@@ -1,0 +1,133 @@
+
+/* Barra principal */
+.rey-navbar {
+  background-color: #171b21;
+  padding: 18px 0;
+  border-bottom: 2px solid #e11d48;
+}
+
+/* Tres columnas: izquierda, centro y derecha */
+.rey-navbar-contenido {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 24px;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* Logo */
+.rey-logo {
+  color: #ffffff;
+  font-size: 1.7rem;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.rey-logo:hover {
+  color: #ffffff;
+}
+
+/* Menú centrado */
+.rey-menu {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.rey-enlace {
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+
+.rey-enlace:hover,
+.rey-enlace.activo {
+  color: #ff315d;
+}
+
+/* Carrito y registro a la derecha */
+.rey-acciones {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+}
+
+.rey-carrito,
+.rey-registro {
+  color: white;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: none;
+  white-space: nowrap;
+  padding: 10px 15px;
+  border-radius: 20px;
+}
+
+.rey-carrito {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.rey-carrito:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.rey-registro {
+  background-color: #e11d48;
+}
+
+.rey-registro:hover {
+  background-color: #be123c;
+  color: white;
+}
+
+/* Pantallas medianas */
+@media (max-width: 1100px) {
+  .rey-navbar-contenido {
+    grid-template-columns: 1fr auto;
+  }
+
+  .rey-menu {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    flex-wrap: wrap;
+  }
+
+  .rey-acciones {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+
+/* Celulares */
+@media (max-width: 650px) {
+  .rey-navbar-contenido {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .rey-logo {
+    font-size: 1.5rem;
+  }
+
+  .rey-menu {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .rey-acciones {
+    justify-content: center;
+  }
+
+  .rey-enlace {
+    font-size: 0.85rem;
+  }
+}

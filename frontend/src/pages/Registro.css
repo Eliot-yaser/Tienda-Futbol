@@ -1,0 +1,102 @@
+
+/* Página de registro - diseño original */
+
+.registro-pagina {
+  min-height: 80vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 50px 20px;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+}
+
+/* Tarjeta blanca */
+
+.registro-tarjeta {
+  background: #ffffff;
+  width: 100%;
+  max-width: 440px;
+  padding: 35px 30px;
+  border-radius: 12px;
+  border-top: 5px solid #e11d48;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+/* Título */
+
+.registro-titulo {
+  text-align: center;
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 30px;
+}
+
+/* Etiquetas */
+
+.registro-pagina .form-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #334155;
+}
+
+/* Campos */
+
+.registro-pagina .form-control {
+  padding: 12px 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 6px;
+  color: #1e293b;
+}
+
+.registro-pagina .form-control:focus {
+  border-color: #e11d48;
+  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.15);
+}
+
+/* Mensajes de error */
+
+.registro-pagina .invalid-feedback {
+  color: #e11d48;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+/* Botón de registro */
+
+.registro-boton {
+  width: 100%;
+  background: linear-gradient(135deg, #e11d48, #be123c);
+  color: #ffffff;
+  border: none;
+  padding: 14px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.registro-boton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(225, 29, 72, 0.3);
+}
+
+.registro-boton:focus-visible {
+  outline: 3px solid #fda4af;
+  outline-offset: 3px;
+}
+
+/* Celulares */
+
+@media (max-width: 650px) {
+  .registro-tarjeta {
+    padding: 25px 20px;
+  }
+
+  .registro-titulo {
+    font-size: 1.5rem;
+  }
+}

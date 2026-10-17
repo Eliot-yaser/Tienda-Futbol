@@ -1,23 +1,31 @@
+
+import "./ProductoCard.css";
+
 function ProductoCard({ nombre, precio, imagen, onAgregar }) {
   return (
-    <div className="card h-100">
+    <article className="card h-100 rey-producto">
       <img
         src={imagen}
-        className="card-img-top"
+        className="card-img-top rey-producto-img"
         alt={nombre}
-        style={{ height: "220px", objectFit: "contain", padding: "12px" }}
       />
 
-      <div className="card-body d-flex flex-column">
+      <div className="card-body d-flex flex-column text-center">
         <h3 className="card-title h5">{nombre}</h3>
 
-        <p className="card-text">Precio: ${precio.toLocaleString("es-CL")}</p>
+        <p className="card-text rey-producto-precio">
+          Precio: ${precio.toLocaleString("es-CL")}
+        </p>
 
-        <button className="btn btn-primary mt-auto" onClick={onAgregar}>
+        <button
+          type="button"
+          className="rey-producto-boton mt-auto"
+          onClick={onAgregar}
+        >
           Agregar al carrito
         </button>
       </div>
-    </div>
+    </article>
   );
 }
 

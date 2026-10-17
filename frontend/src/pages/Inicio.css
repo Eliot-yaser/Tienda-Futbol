@@ -1,0 +1,80 @@
+.inicio-hero {
+  min-height: 400px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 70px 20px;
+
+  background-image:
+    linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.65)),
+    url("/img/hero-futbol.jpg");
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-bottom: 4px solid #e11d48;
+}
+
+.inicio-hero-contenido {
+  max-width: 800px;
+}
+
+.inicio-hero h1 {
+  color: white;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 800;
+  margin-bottom: 20px;
+}
+
+.inicio-hero p {
+  color: #e2e8f0;
+  font-size: 1.15rem;
+  margin-bottom: 30px;
+}
+
+.inicio-boton {
+  display: inline-block;
+  padding: 13px 30px;
+  background-color: #e11d48;
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 700;
+  transition: background-color 0.2s;
+}
+
+.inicio-boton:hover {
+  background-color: #be123c;
+  color: white;
+}
+
+.inicio-destacados h2 {
+  color: #212529;
+  font-size: 2rem;
+}
+
+.inicio-destacados .card {
+  border-radius: 10px;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+
+.inicio-destacados .card:hover {
+  transform: translateY(-5px);
+}
+
+.inicio-destacados .card-text {
+  color: #e11d48;
+  font-weight: 700;
+}
+
+.inicio-destacados .btn-primary {
+  background-color: #212529;
+  border-color: #212529;
+}
+
+.inicio-destacados .btn-primary:hover {
+  background-color: #e11d48;
+  border-color: #e11d48;
+}

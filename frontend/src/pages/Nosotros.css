@@ -1,0 +1,60 @@
+
+/* Página Nosotros - estilo original */
+
+.nosotros-pagina {
+  color: #1e293b;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.nosotros-pagina h2 {
+  font-size: 2rem;
+  color: #0f172a;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+/* Tarjeta principal */
+.nosotros-pagina .about-card {
+  max-width: 800px;
+  margin: 0 auto;
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+/* Títulos rosados */
+.nosotros-pagina .about-title {
+  color: #e11d48;
+  margin-bottom: 1rem;
+}
+
+/* Descripciones */
+.nosotros-pagina .about-text {
+  margin-bottom: 1.5rem;
+  color: #1e293b;
+  line-height: 1.7;
+}
+
+/* Lista del equipo */
+.nosotros-pagina .developers-list {
+  list-style: disc;
+  padding-left: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Pie de página original */
+.nosotros-footer {
+  background-color: #1e293b;
+  color: #94a3b8;
+  text-align: center;
+  padding: 2rem;
+  margin-top: 4rem;
+}
+
+.nosotros-footer p {
+  margin-bottom: 0;
+}

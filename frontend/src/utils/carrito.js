@@ -26,9 +26,7 @@ export function agregarProductoAlCarrito(carrito, producto) {
 
 // Eliminar un producto del carrito
 export function eliminarProductoDelCarrito(carrito, indiceAEliminar) {
-  return carrito.filter(
-    (_, indice) => indice !== indiceAEliminar
-  );
+  return carrito.filter((_, indice) => indice !== indiceAEliminar);
 }
 
 // Cambiar la cantidad de un producto
@@ -39,6 +37,6 @@ export function cambiarCantidadProducto(carrito, codigo, cambio) {
           ...producto,
           cantidad: Math.max(1, producto.cantidad + cambio),
         }
-      : producto
+      : producto,
   );
 }

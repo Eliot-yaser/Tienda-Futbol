@@ -1,5 +1,6 @@
-
 import { useState } from "react";
+import "./Registro.css";
+import { Link } from "react-router-dom";
 
 function Registro() {
   const [nombre, setNombre] = useState("");
@@ -28,8 +29,7 @@ function Registro() {
 
     // Validar contraseña
     if (password.length < 8) {
-      nuevosErrores.password =
-        "La contraseña debe tener al menos 8 caracteres";
+      nuevosErrores.password = "La contraseña debe tener al menos 8 caracteres";
     }
 
     // Mostrar todos los errores encontrados
@@ -48,10 +48,10 @@ function Registro() {
   };
 
   return (
-    <main className="container py-5">
-      <h1>Registro de usuario</h1>
+    <main className="registro-pagina">
+      <form className="registro-tarjeta" onSubmit={validarRegistro} noValidate>
+        <h1 className="registro-titulo">Registro de usuario</h1>
 
-      <form onSubmit={validarRegistro} noValidate>
         {/* Nombre completo */}
         <div className="mb-3">
           <label htmlFor="nombre" className="form-label">
@@ -134,9 +134,20 @@ function Registro() {
           </div>
         )}
 
-        <button type="submit" className="btn btn-primary">
+        {/* Botón rosado */}
+        <button type="submit" className="registro-boton">
           Registrarse
         </button>
+        <p className="text-center mt-4 mb-0">
+          ¿Ya tienes una cuenta?{" "}
+          <Link
+            to="/login"
+            className="fw-bold text-decoration-none"
+            style={{ color: "#e11d48" }}
+          >
+            Inicia sesión aquí
+          </Link>
+        </p>
       </form>
     </main>
   );

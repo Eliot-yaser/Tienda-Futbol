@@ -1,0 +1,134 @@
+
+/* Página Contacto - diseño original */
+
+.contacto-pagina {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.contacto-pagina h2 {
+  text-align: center;
+  color: #0f172a;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+}
+
+/* Tarjeta blanca del formulario */
+
+.contacto-tarjeta {
+  background: #ffffff;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 35px 30px;
+  border-radius: 12px;
+  border-top: 5px solid #e11d48;
+  box-shadow: 0 15px 35px rgba(15, 23, 42, 0.15);
+
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Campos del formulario */
+
+.contacto-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.contacto-grupo label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #334155;
+}
+
+.contacto-grupo input,
+.contacto-grupo textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  background-color: #ffffff;
+  color: #1e293b;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.contacto-grupo textarea {
+  resize: vertical;
+  min-height: 130px;
+}
+
+.contacto-grupo input:focus,
+.contacto-grupo textarea:focus {
+  border-color: #e11d48;
+  box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.15);
+}
+
+/* Errores de validación */
+
+.contacto-error {
+  color: #e11d48;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Botón principal */
+
+.contacto-boton {
+  background: linear-gradient(135deg, #e11d48, #be123c);
+  color: #ffffff;
+  border: none;
+  padding: 14px;
+  border-radius: 6px;
+  font-weight: 800;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.contacto-boton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(225, 29, 72, 0.3);
+}
+
+/* Aviso de formulario validado */
+
+.contacto-exito {
+  background-color: #dcfce7;
+  color: #166534;
+  padding: 12px;
+  border-radius: 6px;
+  text-align: center;
+  margin-bottom: 0;
+}
+
+/* Pie de página */
+
+.contacto-footer {
+  background-color: #1e293b;
+  color: #94a3b8;
+  text-align: center;
+  padding: 2rem;
+  margin-top: 4rem;
+}
+
+.contacto-footer p {
+  margin-bottom: 0;
+}
+
+/* Adaptación para celulares */
+
+@media (max-width: 650px) {
+  .contacto-tarjeta {
+    padding: 25px 20px;
+  }
+
+  .contacto-pagina h2 {
+    font-size: 1.6rem;
+  }
+}
