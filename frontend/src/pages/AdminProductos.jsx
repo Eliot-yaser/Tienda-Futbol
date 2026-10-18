@@ -7,8 +7,9 @@ import "./AdminProductos.css";
 const FORMULARIO_VACIO = {
   codigo: "", nombre: "", descripcion: "", categoria: "Camisetas",
   precio: "", stock: "", stockCritico: "", imagen: "",
+  enOferta: false, precioAnterior: "",
 };
-const CLAVES_CATEGORIA = ["Camisetas", "Shorts", "Calzado", "Balones", "Medias", "Canilleras", "Guantes"];
+const CLAVES_CATEGORIA = ["Camisetas", "Shorts", "Calzado", "Balones", "Medias", "Accesorios", "Guantes"];
 
 export default function AdminProductos() {
   const productos = useProductos();
@@ -46,7 +47,10 @@ export default function AdminProductos() {
 
   const editar = (producto) => {
     setEditando(producto.codigo);
-    setFormulario({ ...producto });
+    setFormulario({ ...producto,
+      enOferta: producto.enOferta === true,
+      precioAnterior: producto.precioAnterior ?? "",
+    });
     setError("");
     setMensaje("");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -136,6 +140,22 @@ export default function AdminProductos() {
                   value={formulario.precio} onChange={(e) => cambiar("precio", e.target.value)} />
               </div>
               <div className="col-12 col-md-4">
+                <div className="form-check mt-md-4 pt-md-2">
+                  <input id="producto-en-oferta" type="checkbox" className="form-check-input"
+                    checked={Boolean(formulario.enOferta)}
+                    onChange={(e) => cambiar("enOferta", e.target.checked)} />
+                  <label className="form-check-label fw-semibold" htmlFor="producto-en-oferta">Publicar como oferta</label>
+                </div>
+              </div>
+              <div className="col-12 col-md-4">
+                <label htmlFor="producto-precio-anterior" className="form-label">Precio anterior (CLP)</label>
+                <input id="producto-precio-anterior" type="number" min="1" step="1" className="form-control"
+                  required={Boolean(formulario.enOferta)} disabled={!formulario.enOferta}
+                  placeholder="Mayor que el precio actual"
+                  value={formulario.precioAnterior ?? ""}
+                  onChange={(e) => cambiar("precioAnterior", e.target.value)} />
+              </div>
+              <div className="col-12 col-md-4">
                 <label htmlFor="producto-stock" className="form-label">Stock inicial</label>
                 <input id="producto-stock" type="number" min="0" step="1" required className="form-control"
                   disabled={Boolean(editando)} value={formulario.stock}
@@ -150,7 +170,8 @@ export default function AdminProductos() {
             </div>
             <p className="text-secondary small mt-3 mb-3">
               En edición, la categoría, el código y el stock inicial se conservan para proteger el inventario.
-              Las existencias por talla se configuran desde Inventario.
+              Las existencias por talla se configuran desde Inventario. Para publicar una oferta,
+              indica un precio anterior superior al precio actual: el precio actual es el que se cobra.
             </p>
             <div className="d-flex flex-wrap gap-2">
               <button className="btn btn-primary" type="submit">
@@ -176,13 +197,14 @@ export default function AdminProductos() {
           <div className="table-responsive">
             <table className="table table-striped table-hover align-middle">
               <thead className="table-dark"><tr>
-                <th>Código</th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Acciones</th>
+                <th>Código</th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Oferta</th><th>Acciones</th>
               </tr></thead>
               <tbody>
                 {visibles.map((p) =>
                   <tr key={p.codigo}>
                     <td>{p.codigo}</td><td>{p.nombre}</td><td>{p.categoria}</td>
                     <td>${Number(p.precio).toLocaleString("es-CL")}</td>
+                    <td>{p.enOferta === true ? "Sí" : "No"}</td>
                     <td>
                       <div className="d-flex flex-wrap gap-2">
                         <button type="button" className="btn btn-sm btn-outline-primary" onClick={() => editar(p)}>Editar</button>

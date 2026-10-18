@@ -36,6 +36,14 @@ function Navbar({ cantidadTotal, usuario, onCerrarSesion }) {
             Productos
           </NavLink>
 
+          <NavLink to="/categorias" className={claseEnlace}>
+            Categorías
+          </NavLink>
+
+          <NavLink to="/ofertas" className={claseEnlace}>
+            Ofertas
+          </NavLink>
+
           <NavLink to="/nosotros" className={claseEnlace}>
             Nosotros
           </NavLink>

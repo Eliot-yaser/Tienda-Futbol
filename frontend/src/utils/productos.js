@@ -29,6 +29,8 @@ function validarProducto(datos) {
   const precio = Number(datos.precio);
   const stock = Number(datos.stock);
   const stockCritico = Number(datos.stockCritico);
+  const enOferta = datos.enOferta === true;
+  const precioAnterior = enOferta ? Number(datos.precioAnterior) : null;
 
   if (!/^[A-Z0-9-]{3,20}$/.test(codigo)) {
     throw new Error("El código debe tener 3 a 20 letras, números o guiones.");
@@ -43,13 +45,17 @@ function validarProducto(datos) {
   if (!Number.isSafeInteger(precio) || precio <= 0) {
     throw new Error("El precio debe ser un entero mayor que cero.");
   }
+  if (enOferta && (!Number.isSafeInteger(precioAnterior) || precioAnterior <= precio)) {
+    throw new Error("Para publicar una oferta, el precio anterior debe superar al precio actual.");
+  }
   if (!Number.isSafeInteger(stock) || stock < 0 ||
       !Number.isSafeInteger(stockCritico) || stockCritico < 0 ||
       stockCritico > stock) {
     throw new Error("El stock y el stock crítico deben ser válidos.");
   }
 
-  return { codigo, nombre, descripcion, precio, stock, stockCritico, categoria, imagen };
+  return { codigo, nombre, descripcion, precio, stock, stockCritico, categoria, imagen,
+    enOferta, precioAnterior };
 }
 
 export function crearProducto(datos) {

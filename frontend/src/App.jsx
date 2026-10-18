@@ -26,6 +26,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminProductos from "./pages/AdminProductos";
 import VendedorDashboard from "./pages/VendedorDashboard";
 import AdminUsuarios from "./pages/AdminUsuarios";
+import Categorias from "./pages/Categorias";
+import Ofertas from "./pages/Ofertas";
 import { inicializarUsuarios } from "./utils/usuarios";
 
 // Funciones del carrito
@@ -559,6 +561,11 @@ function App() {
           }
         />
 
+        {/* Categorías y ofertas públicas */}
+        <Route path="/categorias" element={<Categorias />} />
+        <Route path="/categorias/:categoria" element={<Categorias />} />
+        <Route path="/ofertas" element={<Ofertas />} />
+
         {/* Productos */}
         <Route
           path="/productos"
@@ -611,6 +618,8 @@ function App() {
                         nombre={producto.nombre}
                         precio={producto.precio}
                         imagen={producto.imagen}
+                        enOferta={producto.enOferta}
+                        precioAnterior={producto.precioAnterior}
                         onAgregar={() => irAlDetalle(producto)}
                       />
                     </div>

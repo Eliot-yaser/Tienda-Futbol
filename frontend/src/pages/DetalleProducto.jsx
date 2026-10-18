@@ -3,6 +3,7 @@ import { useProductos } from "../hooks/useProductos.js";
 import { useEffect, useState } from "react";
 import { obtenerTallasPorCategoria } from "../utils/tallas";
 import { cargarInventario } from "../utils/inventario";
+import { esOfertaValida, porcentajeDescuento } from "../utils/catalogoExtra.js";
 
 function DetalleProducto({ onAgregar }) {
   const productosBase = useProductos();
@@ -79,6 +80,12 @@ function DetalleProducto({ onAgregar }) {
 
           <h1 className="fw-bold mb-3">{producto.nombre}</h1>
 
+          {esOfertaValida(producto) && <div className="mb-2">
+            <span className="badge bg-danger me-2">Oferta -{porcentajeDescuento(producto)}%</span>
+            <span className="text-secondary text-decoration-line-through">
+              Antes: ${producto.precioAnterior.toLocaleString("es-CL")}
+            </span>
+          </div>}
           <h2 className="fw-bold mb-4" style={{ color: "#e11d48" }}>
             ${producto.precio.toLocaleString("es-CL")}
           </h2>

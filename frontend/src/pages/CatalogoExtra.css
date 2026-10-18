@@ -1,0 +1,32 @@
+.rey-catalogo-extra .rey-categorias-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 1rem;
+}
+.rey-categoria-card {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  min-height: 106px;
+  border: 1px solid #dfe5ed;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #17212d;
+  background: white;
+  padding: .75rem;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, .06);
+}
+.rey-categoria-card:hover, .rey-categoria-card.actual {
+  border-color: #e11d48;
+  color: #9f1239;
+}
+.rey-categoria-card img {
+  width: 75px;
+  height: 75px;
+  object-fit: contain;
+}
+.rey-categoria-card span { display: flex; flex-direction: column; gap: .25rem; }
+.rey-categoria-card small { color: #59687b; }
+@media (max-width: 480px) {
+  .rey-catalogo-extra .rey-categorias-grid { grid-template-columns: 1fr; }
+}

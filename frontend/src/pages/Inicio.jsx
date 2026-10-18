@@ -53,6 +53,8 @@ function Inicio({ onAgregar }) {
                 nombre={producto.nombre}
                 precio={producto.precio}
                 imagen={producto.imagen}
+                enOferta={producto.enOferta}
+                precioAnterior={producto.precioAnterior}
                 onAgregar={() => onAgregar(producto)}
               />
             </div>
