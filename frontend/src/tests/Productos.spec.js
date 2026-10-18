@@ -6,6 +6,7 @@ import {
 } from "../utils/productos.js";
 
 const CLAVE = "rey-balon-productos-v1";
+const CLAVE_INVENTARIO = "rey-balon-inventario";
 const NUEVO = {
   codigo: "PRU-001",
   nombre: "Producto de prueba",
@@ -18,8 +19,14 @@ const NUEVO = {
 };
 
 describe("CRUD de productos de Rey del Balón", () => {
-  beforeEach(() => localStorage.removeItem(CLAVE));
-  afterEach(() => localStorage.removeItem(CLAVE));
+  beforeEach(() => {
+    localStorage.removeItem(CLAVE);
+    localStorage.removeItem(CLAVE_INVENTARIO);
+  });
+  afterEach(() => {
+    localStorage.removeItem(CLAVE);
+    localStorage.removeItem(CLAVE_INVENTARIO);
+  });
 
   it("conserva el catálogo original cuando no hay cambios guardados", () => {
     expect(cargarProductos().length).toBe(42);
@@ -59,5 +66,29 @@ describe("CRUD de productos de Rey del Balón", () => {
 
   it("rechaza precios inválidos", () => {
     expect(() => crearProducto({ ...NUEVO, precio: -1 })).toThrowError(/precio/);
+  });
+
+  it("elimina solo el inventario del producto borrado", () => {
+    crearProducto(NUEVO);
+    localStorage.setItem("rey-balon-inventario", JSON.stringify({
+      "PRU-001": { _stockTotal: 8 },
+      "CAM-001": { _stockTotal: 25 },
+    }));
+
+    eliminarProducto("PRU-001");
+    const inventario = JSON.parse(localStorage.getItem("rey-balon-inventario"));
+    expect(inventario["PRU-001"]).toBeUndefined();
+    expect(inventario["CAM-001"]._stockTotal).toBe(25);
+  });
+
+  it("no reutiliza existencias huérfanas al crear un código antiguo", () => {
+    localStorage.setItem("rey-balon-inventario", JSON.stringify({
+      "PRU-001": { _stockTotal: 999 },
+    }));
+    crearProducto(NUEVO);
+
+    const inventario = JSON.parse(localStorage.getItem("rey-balon-inventario"));
+    expect(inventario["PRU-001"]).toBeUndefined();
+    expect(cargarProductos().find((p) => p.codigo === "PRU-001").stock).toBe(10);
   });
 });

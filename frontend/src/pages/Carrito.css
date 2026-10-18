@@ -399,3 +399,112 @@
   background: #15803d;
   border-color: #15803d;
 }
+
+/* En celulares, mostrar cada fila como una tarjeta legible sin scroll horizontal.
+   En escritorio se mantiene la tabla original. */
+.carrito-etiqueta-movil {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .carrito-tabla-contenedor.table-responsive {
+    overflow-x: visible;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .carrito-tabla {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    background: transparent;
+  }
+
+  .carrito-tabla thead {
+    display: none;
+  }
+
+  .carrito-tabla tbody {
+    display: grid;
+    gap: 16px;
+  }
+
+  .carrito-tabla tr {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  }
+
+  .carrito-tabla td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    min-width: 0;
+    padding: 10px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    overflow-wrap: anywhere;
+  }
+
+  .carrito-tabla td:first-child {
+    display: block;
+    padding: 16px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .carrito-tabla td:last-child {
+    border-bottom: 0;
+  }
+
+  .carrito-producto {
+    min-width: 0;
+    width: 100%;
+    font-weight: 700;
+  }
+
+  .carrito-producto span {
+    min-width: 0;
+  }
+
+  .carrito-imagen {
+    flex-shrink: 0;
+  }
+
+  .carrito-etiqueta-movil {
+    display: inline-block;
+    flex-shrink: 0;
+    color: #64748b;
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+
+  .carrito-cantidad {
+    justify-content: flex-end;
+  }
+
+  .carrito-acciones {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .carrito-acciones > * {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .carrito-resumen {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+}

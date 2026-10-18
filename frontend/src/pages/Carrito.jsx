@@ -54,7 +54,7 @@ function Carrito({
           <>
             {/* Tabla del carrito */}
             <div className="table-responsive carrito-tabla-contenedor">
-              <table className="carrito-tabla">
+              <table className="carrito-tabla" aria-label="Productos en el carrito">
                 <thead>
                   <tr>
                     <th>Producto</th>
@@ -86,16 +86,19 @@ function Carrito({
 
                       {/* Talla */}
                       <td>
-                        {producto.talla ?? "Única"}
+                        <span className="carrito-etiqueta-movil" aria-hidden="true">Talla</span>
+                        <span>{producto.talla ?? "Única"}</span>
                       </td>
 
                       {/* Precio */}
                       <td className="carrito-precio">
-                        ${producto.precio.toLocaleString("es-CL")}
+                        <span className="carrito-etiqueta-movil" aria-hidden="true">Precio</span>
+                        <span>${producto.precio.toLocaleString("es-CL")}</span>
                       </td>
 
                       {/* Cantidad */}
                       <td>
+                        <span className="carrito-etiqueta-movil" aria-hidden="true">Cantidad</span>
                         <div className="carrito-cantidad">
                           <button
                             type="button"
@@ -132,14 +135,15 @@ function Carrito({
 
                       {/* Subtotal */}
                       <td className="carrito-subtotal">
-                        $
-                        {(
-                          producto.precio * producto.cantidad
-                        ).toLocaleString("es-CL")}
+                        <span className="carrito-etiqueta-movil" aria-hidden="true">Subtotal</span>
+                        <span>
+                          ${(producto.precio * producto.cantidad).toLocaleString("es-CL")}
+                        </span>
                       </td>
 
                       {/* Eliminar */}
                       <td>
+                        <span className="carrito-etiqueta-movil" aria-hidden="true">Acciones</span>
                         <button
                           type="button"
                           className="carrito-eliminar"

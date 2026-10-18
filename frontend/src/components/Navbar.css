@@ -51,6 +51,31 @@
   color: #ff315d;
 }
 
+/* Botón hamburguesa: oculto en pantallas grandes */
+.rey-menu-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  color: #ffffff;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 10px;
+  font-size: 1.65rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.rey-menu-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.rey-menu-toggle:focus-visible {
+  outline: 3px solid #fda4af;
+  outline-offset: 3px;
+}
+
 /* Carrito y registro a la derecha */
 .rey-acciones {
   display: flex;
@@ -106,28 +131,77 @@
   }
 }
 
-/* Celulares */
+/* Celulares: logo y botón en la primera fila, acciones debajo */
 @media (max-width: 650px) {
+  .rey-navbar {
+    padding: 12px 0;
+  }
+
   .rey-navbar-contenido {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 12px;
   }
 
   .rey-logo {
-    font-size: 1.5rem;
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    font-size: clamp(1.15rem, 4.2vw, 1.5rem);
+  }
+
+  .rey-menu-toggle {
+    display: inline-flex;
+    grid-column: 2;
+    grid-row: 1;
   }
 
   .rey-menu {
-    flex-wrap: wrap;
-    gap: 12px;
+    display: none;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 6px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
   }
 
-  .rey-acciones {
-    justify-content: center;
+  .rey-menu.rey-menu-abierto {
+    display: flex;
   }
 
   .rey-enlace {
+    display: block;
+    width: 100%;
+    padding: 12px 10px;
+    font-size: 0.95rem;
+    white-space: normal;
+  }
+
+  .rey-acciones {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .rey-carrito,
+  .rey-registro {
+    padding: 9px 12px;
+    font-size: 0.85rem;
+  }
+
+  .rey-menu:not(.rey-menu-abierto) + .rey-acciones {
+    grid-row: 2;
+  }
+
+  .rey-navbar .rey-usuario-boton {
+    padding: 9px 12px;
     font-size: 0.85rem;
   }
 }

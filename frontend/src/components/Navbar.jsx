@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import "./Navbar.css";
 
 function Navbar({ cantidadTotal, usuario, onCerrarSesion }) {
+  const [menuAbierto, setMenuAbierto] = useState(false);
   const claseEnlace = ({ isActive }) =>
     isActive ? "rey-enlace activo" : "rey-enlace";
 
@@ -26,8 +28,25 @@ function Navbar({ cantidadTotal, usuario, onCerrarSesion }) {
           Rey del Balón ⚽
         </NavLink>
 
+        {/* Mostrar enlaces al tocar el botón en pantallas pequeñas */}
+        <button
+          type="button"
+          className="rey-menu-toggle"
+          aria-controls="rey-menu-principal"
+          aria-expanded={menuAbierto}
+          aria-label={menuAbierto ? "Cerrar menú" : "Abrir menú"}
+          onClick={() => setMenuAbierto((abierto) => !abierto)}
+        >
+          <span aria-hidden="true">{menuAbierto ? "✕" : "☰"}</span>
+        </button>
+
         {/* Navegación principal */}
-        <nav className="rey-menu" aria-label="Menú principal">
+        <nav
+          id="rey-menu-principal"
+          className={`rey-menu${menuAbierto ? " rey-menu-abierto" : ""}`}
+          aria-label="Menú principal"
+          onClick={() => setMenuAbierto(false)}
+        >
           <NavLink to="/" end className={claseEnlace}>
             Inicio
           </NavLink>

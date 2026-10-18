@@ -1,4 +1,5 @@
 import productosBase from "../data/productos.js";
+import { cargarInventario, guardarInventario } from "./inventario.js";
 
 const CLAVE_PRODUCTOS = "rey-balon-productos-v1";
 
@@ -18,6 +19,34 @@ function guardarProductos(productos) {
   localStorage.setItem(CLAVE_PRODUCTOS, JSON.stringify(productos));
   // storage no se dispara en la misma pestaña. Avisamos a los componentes React.
   window.dispatchEvent(new Event("rey-balon-productos-cambiaron"));
+}
+
+// Evitar que un código eliminado o reutilizado conserve existencias antiguas.
+// No tocar otras referencias del inventario ni el historial de ventas.
+function guardarSinStockAnterior(productos, codigo) {
+  const inventario = cargarInventario();
+  if (!Object.prototype.hasOwnProperty.call(inventario, codigo)) {
+    guardarProductos(productos);
+    return;
+  }
+
+  const respaldo = localStorage.getItem("rey-balon-inventario");
+  const inventarioActualizado = { ...inventario };
+  delete inventarioActualizado[codigo];
+  guardarInventario(inventarioActualizado);
+
+  try {
+    guardarProductos(productos);
+  } catch (error) {
+    // Si no se pudo guardar el catálogo, restaurar el inventario anterior.
+    try {
+      if (respaldo === null) localStorage.removeItem("rey-balon-inventario");
+      else localStorage.setItem("rey-balon-inventario", respaldo);
+    } catch (errorRestauracion) {
+      console.error("No se pudo restaurar el inventario:", errorRestauracion);
+    }
+    throw error;
+  }
 }
 
 function validarProducto(datos) {
@@ -64,7 +93,7 @@ export function crearProducto(datos) {
   if (productos.some((p) => p.codigo === nuevo.codigo)) {
     throw new Error("Ya existe un producto con ese código.");
   }
-  guardarProductos([...productos, nuevo]);
+  guardarSinStockAnterior([...productos, nuevo], nuevo.codigo);
   return nuevo;
 }
 
@@ -105,5 +134,5 @@ export function eliminarProducto(codigo) {
     }
   }
 
-  guardarProductos(productos.filter((p) => p.codigo !== codigo));
+  guardarSinStockAnterior(productos.filter((p) => p.codigo !== codigo), codigo);
 }
