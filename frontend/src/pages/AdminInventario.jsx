@@ -1,14 +1,13 @@
 import { useState } from "react";
-import productosBase from "../data/productos";
+import { useProductos } from "../hooks/useProductos.js";
 import { obtenerTallasPorCategoria } from "../utils/tallas";
 import { cargarInventario, guardarInventario } from "../utils/inventario";
 
-// Productos que requieren selección de talla
-const productosConTallas = productosBase.filter(
-  (producto) => obtenerTallasPorCategoria(producto.categoria).length > 0,
-);
-
 function AdminInventario() {
+  const productosBase = useProductos();
+  const productosConTallas = productosBase.filter(
+    (producto) => obtenerTallasPorCategoria(producto.categoria).length > 0,
+  );
   const codigoInicial = productosConTallas[0]?.codigo ?? "";
 
   const [codigoSeleccionado, setCodigoSeleccionado] = useState(codigoInicial);

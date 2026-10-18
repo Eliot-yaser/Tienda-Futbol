@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
-import { Routes, Route, Link, Navigate, useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 
 // Componentes
 import Navbar from "./components/Navbar";
 import ProductoCard from "./components/ProductoCard";
 
-// Datos
-import productosBase from "./data/productos";
+// Catálogo persistido
+import { cargarProductos } from "./utils/productos.js";
+import { useProductos } from "./hooks/useProductos.js";
 
 // Páginas
 import Inicio from "./pages/Inicio";
@@ -20,6 +21,7 @@ import DetalleProducto from "./pages/DetalleProducto";
 import AdminInventario from "./pages/AdminInventario";
 import AdminVentas from "./pages/AdminVentas";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminProductos from "./pages/AdminProductos";
 import VendedorDashboard from "./pages/VendedorDashboard";
 import AdminUsuarios from "./pages/AdminUsuarios";
 import { inicializarUsuarios } from "./utils/usuarios";
@@ -69,7 +71,16 @@ function cargarCarritoUsuario(usuario) {
 
     const carritoGuardado = JSON.parse(datosGuardados);
 
-    return Array.isArray(carritoGuardado) ? carritoGuardado : [];
+    if (!Array.isArray(carritoGuardado)) return [];
+
+    // Mantener precio y nombre actuales si el administrador actualiza el catálogo.
+    const catalogo = cargarProductos();
+    return carritoGuardado.map((item) => {
+      const producto = catalogo.find((p) => p.codigo === item.codigo);
+      return producto
+        ? { ...item, nombre: producto.nombre, precio: producto.precio, imagen: producto.imagen }
+        : item;
+    });
   } catch {
     return [];
   }
@@ -97,6 +108,7 @@ function RutaProtegida({ usuario, rolPermitido, children }) {
 
 function App() {
   const navigate = useNavigate();
+  const productos = useProductos();
 
   // Recuperar el usuario que inició sesión
   const [usuario, setUsuario] = useState(() => {
@@ -148,6 +160,24 @@ function App() {
 
   // Recuperar solamente el carrito del usuario actual
   const [carrito, setCarrito] = useState(() => cargarCarritoUsuario(usuario));
+
+  // Si cambian precios o nombres en el catálogo, actualizar el carrito visible.
+  useEffect(() => {
+    setCarrito((anterior) => {
+      let hayCambios = false;
+      const actualizado = anterior.map((item) => {
+        const producto = productos.find((p) => p.codigo === item.codigo);
+        if (!producto) return item;
+        if (item.nombre !== producto.nombre || item.precio !== producto.precio ||
+            item.imagen !== producto.imagen) {
+          hayCambios = true;
+          return { ...item, nombre: producto.nombre, precio: producto.precio, imagen: producto.imagen };
+        }
+        return item;
+      });
+      return hayCambios ? actualizado : anterior;
+    });
+  }, [productos]);
 
   // Guardar el carrito de la cuenta activa
   useEffect(() => {
@@ -303,7 +333,7 @@ function App() {
       // Validar la compra y preparar descuentos
       const inventarioNuevo = prepararCompra(
         carrito,
-        productosBase,
+        productos,
         inventarioActual,
       );
 
@@ -387,7 +417,7 @@ function App() {
   const cambiarCantidad = (codigo, cambio, talla = null) => {
     // Solo comprobar existencias al aumentar
     if (cambio > 0) {
-      const producto = productosBase.find((item) => item.codigo === codigo);
+      const producto = productos.find((item) => item.codigo === codigo);
 
       if (!producto) {
         mostrarNotificacion("error", "Este producto ya no está disponible.");
@@ -419,14 +449,14 @@ function App() {
   // Categorías
   const categorias = [
     "Todas",
-    ...new Set(productosBase.map((producto) => producto.categoria)),
+    ...new Set(productos.map((producto) => producto.categoria)),
   ];
 
   // Filtrar productos
   const productosFiltrados =
     categoriaSeleccionada === "Todas"
-      ? productosBase
-      : productosBase.filter(
+      ? productos
+      : productos.filter(
           (producto) => producto.categoria === categoriaSeleccionada,
         );
 
@@ -469,6 +499,14 @@ function App() {
         <Route path="/" element={<Inicio onAgregar={irAlDetalle} />} />
 
         {/* Paneles exclusivos del administrador */}
+        <Route
+          path="/admin/productos"
+          element={
+            <RutaProtegida usuario={usuario} rolPermitido="Administrador">
+              <AdminProductos />
+            </RutaProtegida>
+          }
+        />
 
         
       {/* Listado de usuarios del administrador */}

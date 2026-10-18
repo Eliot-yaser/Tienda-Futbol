@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import productosBase from "../data/productos";
+import { useProductos } from "../hooks/useProductos.js";
 import { cargarInventario } from "../utils/inventario";
 import { obtenerTallasPorCategoria } from "../utils/tallas";
 
@@ -42,7 +42,7 @@ function obtenerStockTotal(producto, inventario) {
 }
 
 // Detectar productos o tallas con stock crítico
-function obtenerAlertas(inventario) {
+function obtenerAlertas(inventario, productosBase) {
   const alertas = [];
 
   productosBase.forEach((producto) => {
@@ -98,6 +98,7 @@ function obtenerAlertas(inventario) {
 }
 
 function AdminDashboard() {
+  const productosBase = useProductos();
   const [inventario] = useState(cargarInventario);
   const [ventas] = useState(cargarVentas);
   const [totalUsuarios] = useState(cargarCantidadUsuarios);
@@ -106,7 +107,7 @@ function AdminDashboard() {
   const [seccionAbierta, setSeccionAbierta] =
     useState(null);
 
-  const alertas = obtenerAlertas(inventario);
+  const alertas = obtenerAlertas(inventario, productosBase);
 
   const ingresosTotales = ventas.reduce(
     (total, venta) => total + Number(venta.total || 0),
@@ -251,12 +252,14 @@ function AdminDashboard() {
               </table>
             </div>
 
-            <Link
-              to="/admin/inventario"
-              className="btn btn-dark mt-3"
-            >
-              Gestionar inventario por talla →
-            </Link>
+            <div className="d-flex flex-wrap gap-2 mt-3">
+              <Link to="/admin/productos" className="btn btn-primary">
+                Crear, editar y eliminar productos →
+              </Link>
+              <Link to="/admin/inventario" className="btn btn-dark">
+                Gestionar inventario por talla →
+              </Link>
+            </div>
           </div>
         </section>
       )}
@@ -387,7 +390,10 @@ function AdminDashboard() {
             Accesos rápidos
           </h2>
 
-          <div className="d-flex flex-wrap gap-3">            
+          <div className="d-flex flex-wrap gap-3">
+            <Link to="/admin/productos" className="btn btn-primary">
+              📦 Gestionar productos
+            </Link>
             <Link
               to="/admin/usuarios"
               className="btn btn-primary"

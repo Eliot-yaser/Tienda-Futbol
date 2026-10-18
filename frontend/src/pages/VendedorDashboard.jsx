@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import productosBase from "../data/productos";
+import { useProductos } from "../hooks/useProductos.js";
 import { cargarInventario } from "../utils/inventario";
 import { obtenerTallasPorCategoria } from "../utils/tallas";
 import "./VendedorDashboard.css";
@@ -54,6 +54,7 @@ function resumenTallas(producto, inventario) {
 }
 
 export default function VendedorDashboard() {
+  const productosBase = useProductos();
   const [pestana, setPestana] = useState("productos");
   const [busqueda, setBusqueda] = useState("");
   const [categoria, setCategoria] = useState("Todas");
@@ -76,7 +77,7 @@ export default function VendedorDashboard() {
 
   const categorias = useMemo(
     () => ["Todas", ...new Set(productosBase.map((p) => p.categoria))],
-    [],
+    [productosBase],
   );
 
   const productos = useMemo(() => {
@@ -86,7 +87,7 @@ export default function VendedorDashboard() {
         .some((valor) => String(valor ?? "").toLowerCase().includes(termino));
       return coincideTexto && (categoria === "Todas" || producto.categoria === categoria);
     });
-  }, [busqueda, categoria]);
+  }, [busqueda, categoria, productosBase]);
 
   const ventasOrdenadas = useMemo(
     () => [...datos.ventas].sort((a, b) => new Date(b.fecha) - new Date(a.fecha)),

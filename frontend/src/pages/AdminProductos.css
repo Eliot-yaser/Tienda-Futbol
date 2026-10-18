@@ -1,0 +1,3 @@
+.admin-productos .admin-productos-buscar { width: min(100%, 350px); }
+.admin-productos td, .admin-productos th { vertical-align: middle; }
+.admin-productos .table { min-width: 660px; }

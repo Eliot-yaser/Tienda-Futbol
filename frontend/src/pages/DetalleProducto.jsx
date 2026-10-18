@@ -1,10 +1,11 @@
 import { Link, useParams } from "react-router-dom";
-import productosBase from "../data/productos.js";
+import { useProductos } from "../hooks/useProductos.js";
 import { useEffect, useState } from "react";
 import { obtenerTallasPorCategoria } from "../utils/tallas";
 import { cargarInventario } from "../utils/inventario";
 
 function DetalleProducto({ onAgregar }) {
+  const productosBase = useProductos();
   // Obtener el código del producto desde la URL
   const { codigo } = useParams();
 
@@ -37,6 +38,7 @@ function DetalleProducto({ onAgregar }) {
 
   // Obtener las existencias del producto actual
   const stockPorTalla = inventarioGuardado[producto.codigo] ?? {};
+  const stockTotal = stockPorTalla._stockTotal ?? producto.stock;
 
   // Consultar las unidades de la talla seleccionada
   const stockTalla = tallaSeleccionada
@@ -136,7 +138,7 @@ function DetalleProducto({ onAgregar }) {
               )
             ) : (
               <p className="text-success fw-bold mt-2">
-                ✅ Stock disponible: {producto.stock} unidades
+                ✅ Stock disponible: {stockTotal} unidades
               </p>
             )}
           </div>
@@ -145,7 +147,7 @@ function DetalleProducto({ onAgregar }) {
             type="button"
             className="btn btn-danger me-3 mb-4"
             disabled={
-              producto.stock <= 0 ||
+              stockTotal <= 0 ||
               (tallasDisponibles.length > 0 &&
                 (!tallaSeleccionada || stockTalla === 0))
             }

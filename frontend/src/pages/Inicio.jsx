@@ -1,10 +1,11 @@
 
 import { Link } from "react-router-dom";
 import ProductoCard from "../components/ProductoCard";
-import productosBase from "../data/productos";
+import { useProductos } from "../hooks/useProductos.js";
 import "./Inicio.css";
 
 function Inicio({ onAgregar }) {
+  const productosBase = useProductos();
   const categoriasDestacadas = ["Camisetas", "Calzado", "Balones"];
 
   const destacados = categoriasDestacadas
