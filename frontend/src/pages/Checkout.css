@@ -1,0 +1,5 @@
+.checkout-pagina h1, .checkout-resultado h1 { color: #18212e; }
+.checkout-pagina .card, .checkout-resultado .card { border-radius: 14px; }
+.checkout-resumen { position: sticky; top: 110px; }
+.checkout-resultado .card { max-width: 880px; }
+@media (max-width: 991px) { .checkout-resumen { position: static; } }

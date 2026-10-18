@@ -12,6 +12,8 @@ import { useProductos } from "./hooks/useProductos.js";
 // Páginas
 import Inicio from "./pages/Inicio";
 import Carrito from "./pages/Carrito";
+import Checkout from "./pages/Checkout";
+import CompraResultado from "./pages/CompraResultado";
 import Login from "./pages/Login";
 import Registro from "./pages/Registro";
 import Nosotros from "./pages/Nosotros";
@@ -325,7 +327,7 @@ function App() {
   // CONFIRMAR COMPRA SIMULADA
   // ==========================================
 
-  const confirmarCompra = () => {
+  const confirmarCompra = ({ cliente, entrega }) => {
     try {
       // Leer inventario actual
       const inventarioActual = cargarInventario();
@@ -350,6 +352,8 @@ function App() {
       const venta = {
         id: Date.now(),
         fecha: new Date().toISOString(),
+        cliente,
+        entrega,
 
         productos: carrito.map((producto) => ({
           codigo: producto.codigo,
@@ -391,6 +395,7 @@ function App() {
       return {
         exito: true,
         mensaje: "¡Compra realizada correctamente!",
+        venta,
       };
     } catch (error) {
       return {
@@ -633,10 +638,17 @@ function App() {
               cambiarCantidad={cambiarCantidad}
               eliminarDelCarrito={eliminarDelCarrito}
               vaciarCarrito={vaciarCarrito}
-              confirmarCompra={confirmarCompra}
             />
           }
         />
+
+        {/* Checkout de demostración y resultados */}
+        <Route path="/checkout" element={
+          <Checkout carrito={carrito} totalCarrito={totalCarrito} usuario={usuario}
+            confirmarCompra={confirmarCompra} />
+        } />
+        <Route path="/compra-exitosa" element={<CompraResultado exito />} />
+        <Route path="/compra-error" element={<CompraResultado exito={false} />} />
 
         {/* Registro */}
         <Route
