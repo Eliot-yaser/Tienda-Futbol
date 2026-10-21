@@ -2,7 +2,7 @@ name: Publicar Rey del Balón en GitHub Pages
 
 on:
   push:
-    branches: ["entrega-evaluacion-2"]
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
