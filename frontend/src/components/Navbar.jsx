@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import "./Navbar.css";
 
 function Navbar({ cantidadTotal, usuario, onCerrarSesion }) {
   const [menuAbierto, setMenuAbierto] = useState(false);
+  const location = useLocation();
   const claseEnlace = ({ isActive }) =>
     isActive ? "rey-enlace activo" : "rey-enlace";
 
@@ -83,7 +84,7 @@ function Navbar({ cantidadTotal, usuario, onCerrarSesion }) {
           </NavLink>
 
           {usuario ? (
-            <details className="rey-usuario-menu">
+            <details key={location.pathname} className="rey-usuario-menu">
               <summary className="rey-usuario-boton">
                 👤 Hola, {usuario.nombre}
                 <span aria-hidden="true"> ▾</span>
