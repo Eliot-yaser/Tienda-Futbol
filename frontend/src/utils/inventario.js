@@ -1,13 +1,126 @@
-const CLAVE_INVENTARIO = "rey-balon-inventario";
 import { obtenerTallasPorCategoria } from "./tallas.js";
+
+const CLAVE_INVENTARIO = "rey-balon-inventario";
+
+// Stock inicial de productos seleccionados
+const INVENTARIO_INICIAL = {
+  // Camiseta Selección Chilena 2026
+  "CAM-001": {
+    _stockTotal: 25,
+    S: 5,
+    M: 8,
+    L: 7,
+    XL: 5,
+  },
+
+  // Camiseta Colo-Colo Oficial 2026
+  "CAM-005": {
+    _stockTotal: 30,
+    S: 6,
+    M: 10,
+    L: 9,
+    XL: 5,
+  },
+
+  // Short Selección Chilena 2026
+  "SHO-001": {
+    _stockTotal: 20,
+    S: 4,
+    M: 6,
+    L: 6,
+    XL: 4,
+  },
+
+  // Botines Mercurial Superfly
+  "BOT-001": {
+    _stockTotal: 10,
+    "38": 1,
+    "39": 1,
+    "40": 2,
+    "41": 2,
+    "42": 2,
+    "43": 2,
+    "44": 0,
+    "45": 0,
+  },
+};
+
+// Completar el stock inicial sin sobrescribir el inventario guardado
+function completarInventario(guardado) {
+  const resultado = { ...guardado };
+
+  for (const [codigo, inicial] of Object.entries(INVENTARIO_INICIAL)) {
+    const anterior = resultado[codigo];
+
+    // Si el producto todavía no tiene inventario, usar el inicial
+    if (
+      !anterior ||
+      typeof anterior !== "object" ||
+      Array.isArray(anterior)
+    ) {
+      resultado[codigo] = { ...inicial };
+      continue;
+    }
+
+    // Conservar el stock total guardado anteriormente
+    const total = Number.isSafeInteger(anterior._stockTotal)
+      ? Math.max(0, anterior._stockTotal)
+      : inicial._stockTotal;
+
+    const tallas = Object.keys(inicial).filter(
+      (talla) => talla !== "_stockTotal"
+    );
+
+    // Calcular las unidades que ya estaban asignadas
+    const asignado = tallas.reduce((suma, talla) => {
+      const cantidad = anterior[talla];
+
+      return (
+        suma +
+        (Number.isSafeInteger(cantidad) && cantidad >= 0
+          ? cantidad
+          : 0)
+      );
+    }, 0);
+
+    let disponible = Math.max(0, total - asignado);
+
+    const actualizado = { ...anterior };
+
+    // Completar solamente las tallas que no estén configuradas
+    for (const talla of tallas) {
+      if (
+        Object.prototype.hasOwnProperty.call(
+          actualizado,
+          talla
+        )
+      ) {
+        continue;
+      }
+
+      actualizado[talla] = Math.min(
+        inicial[talla],
+        disponible
+      );
+
+      disponible -= actualizado[talla];
+    }
+
+    resultado[codigo] = actualizado;
+  }
+
+  return resultado;
+}
 
 // Recuperar el inventario guardado
 export function cargarInventario() {
   try {
-    const datosGuardados = localStorage.getItem(CLAVE_INVENTARIO);
+    const datosGuardados = localStorage.getItem(
+      CLAVE_INVENTARIO
+    );
 
     if (!datosGuardados) {
-      return {};
+      return completarInventario({});
     }
 
     const inventario = JSON.parse(datosGuardados);
@@ -17,18 +130,21 @@ export function cargarInventario() {
       typeof inventario === "object" &&
       !Array.isArray(inventario)
     ) {
-      return inventario;
+      return completarInventario(inventario);
     }
 
-    return {};
+    return completarInventario({});
   } catch {
-    return {};
+    return completarInventario({});
   }
 }
 
 // Guardar los cambios del administrador
 export function guardarInventario(inventario) {
-  localStorage.setItem(CLAVE_INVENTARIO, JSON.stringify(inventario));
+  localStorage.setItem(
+    CLAVE_INVENTARIO,
+    JSON.stringify(inventario)
+  );
 }
 
 // Validar una compra y calcular el inventario actualizado
