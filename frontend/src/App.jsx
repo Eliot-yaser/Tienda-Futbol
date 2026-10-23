@@ -570,19 +570,13 @@ function App() {
         <Route
           path="/productos"
           element={
-            <main className="container py-5">
-              <h1>Bienvenido a Rey del Balón</h1>
-
-              <p>
-                Encuentra las mejores camisetas, balones y accesorios de fútbol.
+            
+          <main className="container py-5">
+            <section id="productos">
+              <h1 className="fw-bold mb-2">Nuestros productos</h1>
+              <p className="text-muted mb-4">
+                Descubre camisetas, balones y accesorios para disfrutar del fútbol.
               </p>
-
-              <p className="fw-bold">
-                🛒 Productos en el carrito: {cantidadTotal}
-              </p>
-
-              <section id="productos" className="mt-5">
-                <h2>Nuestros productos</h2>
 
                 {/* Filtro */}
                 <div className="mb-3">
