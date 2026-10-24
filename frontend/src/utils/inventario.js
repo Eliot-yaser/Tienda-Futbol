@@ -2,46 +2,216 @@ import { obtenerTallasPorCategoria } from "./tallas.js";
 
 const CLAVE_INVENTARIO = "rey-balon-inventario";
 
-// Stock inicial de productos seleccionados
+// Stock inicial de 30 productos seleccionados
 const INVENTARIO_INICIAL = {
+
+  // ==============================
+  // CAMISETAS (5 productos)
+  // ==============================
+
   // Camiseta Selección Chilena 2026
   "CAM-001": {
     _stockTotal: 25,
-    S: 5,
-    M: 8,
-    L: 7,
-    XL: 5,
+    S: 5, M: 8, L: 7, XL: 5,
+  },
+
+  // Camiseta Selección de Alemania 2026
+  "CAM-002": {
+    _stockTotal: 20,
+    S: 4, M: 6, L: 6, XL: 4,
+  },
+
+  // Camiseta Selección de Francia 2026
+  "CAM-003": {
+    _stockTotal: 18,
+    S: 3, M: 5, L: 6, XL: 4,
+  },
+
+  // Camiseta Selección de Portugal 2026
+  "CAM-004": {
+    _stockTotal: 15,
+    S: 3, M: 4, L: 5, XL: 3,
   },
 
   // Camiseta Colo-Colo Oficial 2026
   "CAM-005": {
     _stockTotal: 30,
-    S: 6,
-    M: 10,
-    L: 9,
-    XL: 5,
+    S: 6, M: 10, L: 9, XL: 5,
   },
+
+  // ==============================
+  // SHORTS (5 productos)
+  // ==============================
 
   // Short Selección Chilena 2026
   "SHO-001": {
     _stockTotal: 20,
-    S: 4,
-    M: 6,
-    L: 6,
-    XL: 4,
+    S: 4, M: 6, L: 6, XL: 4,
   },
+
+  // Short Selección de Alemania 2026
+  "SHO-002": {
+    _stockTotal: 18,
+    S: 3, M: 5, L: 6, XL: 4,
+  },
+
+  // Short Selección de Francia 2026
+  "SHO-003": {
+    _stockTotal: 18,
+    S: 3, M: 5, L: 6, XL: 4,
+  },
+
+  // Short Selección de Portugal 2026
+  "SHO-004": {
+    _stockTotal: 16,
+    S: 3, M: 5, L: 5, XL: 3,
+  },
+
+  // Short Colo-Colo Oficial 2026
+  "SHO-005": {
+    _stockTotal: 22,
+    S: 4, M: 7, L: 7, XL: 4,
+  },
+
+  // ==============================
+  // BOTINES (5 productos)
+  // ==============================
 
   // Botines Mercurial Superfly
   "BOT-001": {
     _stockTotal: 10,
-    "38": 1,
-    "39": 1,
-    "40": 2,
-    "41": 2,
-    "42": 2,
-    "43": 2,
-    "44": 0,
-    "45": 0,
+    "38": 1, "39": 1, "40": 2, "41": 2,
+    "42": 2, "43": 2, "44": 0, "45": 0,
+  },
+
+  // Botines Phantom GX
+  "BOT-002": {
+    _stockTotal: 12,
+    "38": 1, "39": 1, "40": 2, "41": 2,
+    "42": 2, "43": 2, "44": 1, "45": 1,
+  },
+
+  // Botines Predator Elite
+  "BOT-003": {
+    _stockTotal: 9,
+    "38": 0, "39": 1, "40": 1, "41": 2,
+    "42": 2, "43": 2, "44": 1, "45": 0,
+  },
+
+  // Botines Copa Pure
+  "BOT-004": {
+    _stockTotal: 14,
+    "38": 1, "39": 2, "40": 2, "41": 3,
+    "42": 2, "43": 2, "44": 1, "45": 1,
+  },
+
+  // Botines Future Ultimate
+  "BOT-005": {
+    _stockTotal: 11,
+    "38": 0, "39": 1, "40": 2, "41": 2,
+    "42": 2, "43": 2, "44": 1, "45": 1,
+  },
+
+  // ==============================
+  // MEDIAS (5 productos)
+  // ==============================
+
+  // Medias Selección Chilena
+  "MED-001": {
+    _stockTotal: 35,
+    S: 6, M: 10, L: 11, XL: 8,
+  },
+
+  // Medias Selección de Alemania
+  "MED-002": {
+    _stockTotal: 30,
+    S: 5, M: 8, L: 10, XL: 7,
+  },
+
+  // Medias Selección de Francia
+  "MED-003": {
+    _stockTotal: 30,
+    S: 6, M: 8, L: 9, XL: 7,
+  },
+
+  // Medias Selección de Portugal
+  "MED-004": {
+    _stockTotal: 28,
+    S: 5, M: 8, L: 9, XL: 6,
+  },
+
+  // Medias Colo-Colo
+  "MED-005": {
+    _stockTotal: 35,
+    S: 6, M: 10, L: 11, XL: 8,
+  },
+
+  // ==============================
+  // CANILLERAS (5 productos)
+  // ==============================
+
+  // Canilleras Mercurial Lite
+  "CAN-001": {
+    _stockTotal: 25,
+    S: 7, M: 10, L: 8,
+  },
+
+  // Canilleras Predator
+  "CAN-002": {
+    _stockTotal: 22,
+    S: 6, M: 9, L: 7,
+  },
+
+  // Canilleras Ultra Flex
+  "CAN-003": {
+    _stockTotal: 28,
+    S: 8, M: 11, L: 9,
+  },
+
+  // Canilleras Pro Shield
+  "CAN-004": {
+    _stockTotal: 20,
+    S: 5, M: 9, L: 6,
+  },
+
+  // Canilleras Strike Guard
+  "CAN-005": {
+    _stockTotal: 30,
+    S: 9, M: 12, L: 9,
+  },
+
+  // ==============================
+  // GUANTES DE ARQUERO (5 productos)
+  // ==============================
+
+  // Guantes de Arquero Pro Grip
+  "GUA-001": {
+    _stockTotal: 15,
+    "7": 3, "8": 4, "9": 5, "10": 3,
+  },
+
+  // Guantes Predator Pro
+  "GUA-002": {
+    _stockTotal: 12,
+    "7": 2, "8": 4, "9": 4, "10": 2,
+  },
+
+  // Guantes Vapor Grip
+  "GUA-003": {
+    _stockTotal: 14,
+    "7": 3, "8": 4, "9": 5, "10": 2,
+  },
+
+  // Guantes Future Ultimate
+  "GUA-004": {
+    _stockTotal: 16,
+    "7": 3, "8": 5, "9": 5, "10": 3,
+  },
+
+  // Guantes Match Control
+  "GUA-005": {
+    _stockTotal: 20,
+    "7": 4, "8": 6, "9": 6, "10": 4,
   },
 };
 
