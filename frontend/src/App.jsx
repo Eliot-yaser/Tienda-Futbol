@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 
 // Componentes
@@ -47,6 +47,7 @@ import {
 } from "./utils/inventario";
 
 import { obtenerTallasPorCategoria } from "./utils/tallas";
+import { consultarStockProducto } from "./utils/stockApi.js";
 
 // Estilos
 import "./Notificacion.css";
@@ -113,6 +114,7 @@ function RutaProtegida({ usuario, rolPermitido, children }) {
 function App() {
   const navigate = useNavigate();
   const productos = useProductos();
+  const validacionStockEnCurso = useRef(false);
 
   // Recuperar el usuario que inició sesión
   const [usuario, setUsuario] = useState(() => {
@@ -218,71 +220,62 @@ function App() {
   // VALIDAR EL STOCK ANTES DE AGREGAR
   // ==========================================
 
-  const comprobarStock = (carritoActual, producto, talla = null) => {
-    // Leer el inventario actualizado
-    const inventario = cargarInventario();
-
-    const datosProducto = inventario[producto.codigo] ?? {};
-
-    // Stock total actual
-    const stockTotal = datosProducto._stockTotal ?? producto.stock;
-
-    // Verificar que el stock total sea válido
-    if (!Number.isSafeInteger(stockTotal) || stockTotal < 0) {
-      return "El inventario de este producto no es válido.";
+  // Verificar el stock actual en MySQL antes de sumar unidades al carrito.
+  // La validacion definitiva de una compra debe realizarla el backend.
+  const comprobarStock = async (carritoActual, producto, talla = null, unidades = 1) => {
+    if (!producto?.idProducto) {
+      return "No se pudo identificar el producto en MySQL. Intenta recargar la tienda.";
     }
 
-    // Contar todas las unidades de este producto
-    // que ya están en el carrito
+    const tallasDisponibles = obtenerTallasPorCategoria(producto.categoria);
+    if (tallasDisponibles.length > 0 && !tallasDisponibles.includes(talla)) {
+      return `Selecciona una talla valida para ${producto.nombre}.`;
+    }
+
+    // Revalidar tanto el stock general como el de cada talla con datos del servidor.
+    const apiBase = import.meta.env.VITE_API_URL || "http://localhost:8080";
+    const [respuestaProducto, inventario] = await Promise.all([
+      fetch(`${apiBase}/api/v1/productos/${producto.idProducto}`, { cache: "no-store" }),
+      consultarStockProducto(producto.idProducto),
+    ]);
+    if (!respuestaProducto.ok) {
+      throw new Error("No fue posible verificar el producto en MySQL.");
+    }
+
+    const productoActual = await respuestaProducto.json();
+    if (productoActual.codigo !== producto.codigo) {
+      throw new Error("La informacion del producto no coincide con MySQL.");
+    }
+
+    const stockTotal = Number(productoActual.stock);
+    if (!Number.isSafeInteger(stockTotal) || stockTotal < 0) {
+      throw new Error("El inventario total del producto no es valido.");
+    }
+
     const cantidadTotalEnCarrito = carritoActual
       .filter((item) => item.codigo === producto.codigo)
       .reduce((total, item) => total + item.cantidad, 0);
 
-    // No superar el stock total
-    if (cantidadTotalEnCarrito >= stockTotal) {
-      return `No quedan más unidades disponibles de ` + `${producto.nombre}.`;
+    if (cantidadTotalEnCarrito + unidades > stockTotal) {
+      return `Solo hay ${stockTotal} unidades disponibles de ${producto.nombre} en total.`;
     }
 
-    // Consultar las tallas del producto
-    const tallasDisponibles = obtenerTallasPorCategoria(producto.categoria);
-
-    // Productos que requieren talla
     if (tallasDisponibles.length > 0) {
-      // Comprobar la talla seleccionada
-      if (!tallasDisponibles.includes(talla)) {
-        return `Selecciona una talla válida para ` + `${producto.nombre}.`;
-      }
-
-      // Stock disponible de la talla
-      const stockTalla = datosProducto[talla];
-
-      // Comprobar que el administrador haya configurado
-      // correctamente esa talla
+      const stockTalla = inventario.stockPorTalla[talla];
       if (!Number.isSafeInteger(stockTalla) || stockTalla < 0) {
-        return (
-          `El stock de ${producto.nombre}, ` +
-          `talla ${talla}, todavía no está configurado.`
-        );
+        return `La talla ${talla} de ${producto.nombre} no tiene stock configurado en MySQL.`;
       }
 
-      // Contar unidades de la talla dentro del carrito
       const cantidadTallaEnCarrito = carritoActual
-        .filter(
-          (item) =>
-            item.codigo === producto.codigo && (item.talla ?? null) === talla,
-        )
+        .filter((item) => item.codigo === producto.codigo &&
+          (item.talla ?? null) === talla)
         .reduce((total, item) => total + item.cantidad, 0);
 
-      // Impedir superar las unidades disponibles
-      if (cantidadTallaEnCarrito >= stockTalla) {
-        return (
-          `Solo hay ${stockTalla} unidades disponibles ` +
-          `de ${producto.nombre}, talla ${talla}.`
-        );
+      if (cantidadTallaEnCarrito + unidades > stockTalla) {
+        return `Solo hay ${stockTalla} unidades disponibles de ${producto.nombre}, talla ${talla}.`;
       }
     }
 
-    // Si todo está correcto, no existe error
     return null;
   };
 
@@ -290,31 +283,33 @@ function App() {
   // AGREGAR AL CARRITO
   // ==========================================
 
-  const agregarAlCarrito = (producto, talla = null) => {
-    // Comprobar el stock antes de agregar
-    const errorStock = comprobarStock(carrito, producto, talla);
+  const agregarAlCarrito = async (producto, talla = null) => {
+    // Impedir agregar varias veces mientras la API responde.
+    if (validacionStockEnCurso.current) return;
+    validacionStockEnCurso.current = true;
 
-    if (errorStock) {
-      mostrarNotificacion("error", errorStock);
-      return;
+    try {
+      const errorStock = await comprobarStock(carrito, producto, talla);
+      if (errorStock) {
+        mostrarNotificacion("error", errorStock);
+        return;
+      }
+
+      setCarrito((actual) => agregarProductoAlCarrito(actual, producto, talla));
+      const descripcionTalla = talla ? ` - Talla ${talla}` : "";
+      mostrarNotificacion(
+        "exito",
+        `${producto.nombre}${descripcionTalla} se agrego al carrito.`,
+      );
+    } catch (error) {
+      console.error("No se pudo validar el stock:", error);
+      mostrarNotificacion(
+        "error",
+        "No se pudo verificar el stock en MySQL. Intenta nuevamente.",
+      );
+    } finally {
+      validacionStockEnCurso.current = false;
     }
-
-    // Agregar una unidad
-    const carritoActualizado = agregarProductoAlCarrito(
-      carrito,
-      producto,
-      talla,
-    );
-
-    setCarrito(carritoActualizado);
-
-    // Mostrar mensaje de éxito
-    const descripcionTalla = talla ? ` - Talla ${talla}` : "";
-
-    mostrarNotificacion(
-      "exito",
-      `${producto.nombre}${descripcionTalla} se agregó al carrito.`,
-    );
   };
 
   // ==========================================
@@ -421,28 +416,43 @@ function App() {
   // CAMBIAR CANTIDAD CON CONTROL DE STOCK
   // ==========================================
 
-  const cambiarCantidad = (codigo, cambio, talla = null) => {
-    // Solo comprobar existencias al aumentar
-    if (cambio > 0) {
-      const producto = productos.find((item) => item.codigo === codigo);
+  const cambiarCantidad = async (codigo, cambio, talla = null) => {
+    if (validacionStockEnCurso.current) return;
 
+    // Disminuir no requiere consultar stock, y conserva el minimo de 1 unidad.
+    if (cambio <= 0) {
+      setCarrito((actual) =>
+        cambiarCantidadProducto(actual, codigo, cambio, talla),
+      );
+      return;
+    }
+
+    validacionStockEnCurso.current = true;
+    try {
+      const producto = productos.find((item) => item.codigo === codigo);
       if (!producto) {
-        mostrarNotificacion("error", "Este producto ya no está disponible.");
+        mostrarNotificacion("error", "Este producto ya no esta disponible.");
         return;
       }
 
-      const errorStock = comprobarStock(carrito, producto, talla);
-
+      const errorStock = await comprobarStock(carrito, producto, talla, cambio);
       if (errorStock) {
         mostrarNotificacion("error", errorStock);
         return;
       }
-    }
 
-    // Cambiar únicamente la variante correspondiente
-    setCarrito((carritoAnterior) =>
-      cambiarCantidadProducto(carritoAnterior, codigo, cambio, talla),
-    );
+      setCarrito((actual) =>
+        cambiarCantidadProducto(actual, codigo, cambio, talla),
+      );
+    } catch (error) {
+      console.error("No se pudo validar el stock:", error);
+      mostrarNotificacion(
+        "error",
+        "No se pudo verificar el stock en MySQL. Intenta nuevamente.",
+      );
+    } finally {
+      validacionStockEnCurso.current = false;
+    }
   };
 
   // ==========================================
@@ -627,7 +637,12 @@ function App() {
         {/* Detalle */}
         <Route
           path="/producto/:codigo"
-          element={<DetalleProducto onAgregar={agregarAlCarrito} />}
+          element={
+            <DetalleProducto
+              onAgregar={agregarAlCarrito}
+              productosBase={productos}
+            />
+          }
         />
 
         {/* Carrito */}

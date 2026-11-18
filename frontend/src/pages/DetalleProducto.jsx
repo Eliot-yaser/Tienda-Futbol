@@ -1,16 +1,18 @@
 import { Link, useParams } from "react-router-dom";
-import { useProductos } from "../hooks/useProductos.js";
 import { useEffect, useState } from "react";
 import { obtenerTallasPorCategoria } from "../utils/tallas";
 import { cargarInventario } from "../utils/inventario";
 import { esOfertaValida, porcentajeDescuento } from "../utils/catalogoExtra.js";
 
-function DetalleProducto({ onAgregar }) {
-  const productosBase = useProductos();
+function DetalleProducto({ onAgregar, productosBase }) {
   // Obtener el código del producto desde la URL
   const { codigo } = useParams();
 
   const [tallaSeleccionada, setTallaSeleccionada] = useState("");
+
+  const [stockApi, setStockApi] = useState({});
+  const [estadoStock, setEstadoStock] = useState("cargando");
+
 
   useEffect(() => {
     setTallaSeleccionada("");
@@ -18,6 +20,54 @@ function DetalleProducto({ onAgregar }) {
 
   // Buscar el producto seleccionado
   const producto = productosBase.find((item) => item.codigo === codigo);
+
+useEffect(() => {
+  const controlador = new AbortController();
+
+  async function consultarStock() {
+    if (!producto?.idProducto) {
+      setEstadoStock("cargando");
+      return;
+    }
+
+    setEstadoStock("cargando");
+
+    try {
+      const respuesta = await fetch(
+        `http://localhost:8080/api/v1/productos/${producto.idProducto}/tallas`,
+        { signal: controlador.signal }
+      );
+
+      if (!respuesta.ok) {
+        throw new Error("No se pudo consultar el inventario.");
+      }
+
+      const tallas = await respuesta.json();
+
+      const inventario = Object.fromEntries(
+        tallas.map((item) => [
+          item.talla,
+          Number(item.stock),
+        ])
+      );
+
+      if (!controlador.signal.aborted) {
+        setStockApi(inventario);
+        setEstadoStock("ok");
+      }
+    } catch (error) {
+      if (!controlador.signal.aborted) {
+        console.error("Error al consultar stock:", error);
+        setEstadoStock("error");
+      }
+    }
+  }
+
+  consultarStock();
+
+  return () => controlador.abort();
+}, [producto?.idProducto]);
+
 
   // Mostrar un mensaje si el producto no existe
   if (!producto) {
@@ -37,9 +87,15 @@ function DetalleProducto({ onAgregar }) {
   // Leer el inventario guardado por el administrador
   const inventarioGuardado = cargarInventario();
 
-  // Obtener las existencias del producto actual
-  const stockPorTalla = inventarioGuardado[producto.codigo] ?? {};
-  const stockTotal = stockPorTalla._stockTotal ?? producto.stock;
+
+const stockPorTalla = estadoStock === "ok"
+  ? stockApi
+  : {};
+
+const stockTotal = estadoStock === "ok"
+  ? producto.stock
+  : 0;
+
 
   // Consultar las unidades de la talla seleccionada
   const stockTalla = tallaSeleccionada
@@ -150,18 +206,23 @@ function DetalleProducto({ onAgregar }) {
             )}
           </div>
 
+          
           <button
             type="button"
             className="btn btn-danger me-3 mb-4"
             disabled={
+              estadoStock !== "ok" ||
               stockTotal <= 0 ||
               (tallasDisponibles.length > 0 &&
-                (!tallaSeleccionada || stockTalla === 0))
+                (!tallaSeleccionada ||
+                  stockTalla === undefined ||
+                  stockTalla <= 0))
             }
             onClick={() => onAgregar(producto, tallaSeleccionada || null)}
           >
             Agregar al carrito
           </button>
+
 
           <Link
             to="/productos"

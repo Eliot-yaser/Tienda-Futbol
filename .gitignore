@@ -1,0 +1,21 @@
+﻿# React y Vite
+**/node_modules/
+**/dist/
+**/coverage/
+
+# Spring Boot y Maven
+**/target/
+
+# Credenciales y configuraciones locales
+**/.env
+**/.env.*
+!**/.env.example
+backend/src/main/resources/application.properties
+
+# Archivos del editor
+**/.vscode/
+**/.idea/
+
+# Archivos temporales
+**/*.log
+**/.DS_Store
