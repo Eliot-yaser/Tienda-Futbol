@@ -12,6 +12,12 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.security.config.http.SessionCreationPolicy;
 
+import cl.reydelbalon.backend.entity.Usuario;
+import cl.reydelbalon.backend.repository.UsuarioRepository;
+
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
+
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 
@@ -21,8 +27,10 @@ import java.util.List;
 public class SecurityConfig {
 
     @Bean
+
     public SecurityFilterChain securityFilterChain(
-            HttpSecurity http) throws Exception {
+            HttpSecurity http,
+            UsuarioRepository usuarioRepository) throws Exception {
 
         http
                 .cors(cors -> cors
@@ -35,7 +43,7 @@ public class SecurityConfig {
 
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt
-                                .jwtAuthenticationConverter(jwtAuthenticationConverter())))
+                                .jwtAuthenticationConverter(jwtAuthenticationConverter(usuarioRepository))))
 
                 .authorizeHttpRequests(auth -> auth
 
@@ -74,23 +82,30 @@ public class SecurityConfig {
     }
 
     @Bean
-    public JwtAuthenticationConverter jwtAuthenticationConverter() {
+
+    public JwtAuthenticationConverter jwtAuthenticationConverter(
+            UsuarioRepository usuarioRepository) {
 
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
 
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
 
-            String rol = jwt.getClaimAsString("rol");
+            String email = jwt.getSubject();
 
-            if (rol == null || !List.of(
-                    "CLIENTE",
-                    "VENDEDOR",
-                    "ADMINISTRADOR").contains(rol)) {
-                return List.of();
+            Usuario usuario = usuarioRepository.findByEmail(email)
+                    .orElseThrow(() -> new OAuth2AuthenticationException(
+                            new OAuth2Error("invalid_token"),
+                            "Usuario no encontrado"));
+
+            if (!Boolean.TRUE.equals(usuario.getActivo())) {
+                throw new OAuth2AuthenticationException(
+                        new OAuth2Error("invalid_token"),
+                        "Usuario inactivo");
             }
 
             return List.of(
-                    new SimpleGrantedAuthority("ROLE_" + rol));
+                    new SimpleGrantedAuthority(
+                            "ROLE_" + usuario.getRol().name()));
         });
 
         return converter;
