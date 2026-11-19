@@ -1,13 +1,13 @@
 
 package cl.reydelbalon.backend.controller;
 
-import cl.reydelbalon.backend.dto.RegistroRequest;
-import cl.reydelbalon.backend.dto.RegistroResponse;
-import cl.reydelbalon.backend.dto.LoginRequest;
-import cl.reydelbalon.backend.dto.LoginResponse;
+import cl.reydelbalon.backend.dto.*;
+import cl.reydelbalon.backend.entity.Usuario;
+import cl.reydelbalon.backend.repository.UsuarioRepository;
 
 import cl.reydelbalon.backend.service.RegistroService;
 import cl.reydelbalon.backend.service.LoginService;
+import cl.reydelbalon.backend.service.RefreshTokenService;
 
 import jakarta.validation.Valid;
 
@@ -15,12 +15,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import cl.reydelbalon.backend.dto.UsuarioActualResponse;
-import cl.reydelbalon.backend.entity.Usuario;
-import cl.reydelbalon.backend.repository.UsuarioRepository;
-
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -28,15 +25,18 @@ public class AuthController {
 
     private final RegistroService registroService;
     private final LoginService loginService;
+    private final RefreshTokenService refreshTokenService;
     private final UsuarioRepository usuarioRepository;
 
     public AuthController(
             RegistroService registroService,
             LoginService loginService,
+            RefreshTokenService refreshTokenService,
             UsuarioRepository usuarioRepository) {
 
         this.registroService = registroService;
         this.loginService = loginService;
+        this.refreshTokenService = refreshTokenService;
         this.usuarioRepository = usuarioRepository;
     }
 
@@ -60,6 +60,18 @@ public class AuthController {
         return ResponseEntity.ok(respuesta);
     }
 
+    @PostMapping("/refresh")
+    public ResponseEntity<RefreshTokenResponse> renovarSesion(
+            @Valid @RequestBody RefreshTokenRequest request) {
+
+        RefreshTokenResponse respuesta =
+                refreshTokenService.renovarToken(
+                        request.refreshToken()
+                );
+
+        return ResponseEntity.ok(respuesta);
+    }
+
     @GetMapping("/me")
     public ResponseEntity<UsuarioActualResponse> obtenerUsuarioActual(
             @AuthenticationPrincipal Jwt jwt) {
@@ -67,14 +79,16 @@ public class AuthController {
         String email = jwt.getSubject();
 
         Usuario usuario = usuarioRepository.findByEmail(email)
-                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.UNAUTHORIZED,
-                        "Usuario no encontrado"));
+                        "Usuario no encontrado"
+                ));
 
         if (!Boolean.TRUE.equals(usuario.getActivo())) {
-            throw new org.springframework.web.server.ResponseStatusException(
+            throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
-                    "Usuario inactivo");
+                    "Usuario inactivo"
+            );
         }
 
         UsuarioActualResponse respuesta = new UsuarioActualResponse(
@@ -82,9 +96,9 @@ public class AuthController {
                 usuario.getNombre(),
                 usuario.getApellidos(),
                 usuario.getEmail(),
-                usuario.getRol().name());
+                usuario.getRol().name()
+        );
 
         return ResponseEntity.ok(respuesta);
     }
-
 }

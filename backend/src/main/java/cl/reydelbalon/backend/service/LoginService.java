@@ -10,6 +10,7 @@ import cl.reydelbalon.backend.repository.UsuarioRepository;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Locale;
 
@@ -19,17 +20,21 @@ public class LoginService {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
 
     public LoginService(
             UsuarioRepository usuarioRepository,
             PasswordEncoder passwordEncoder,
-            JwtService jwtService) {
+            JwtService jwtService,
+            RefreshTokenService refreshTokenService) {
 
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.refreshTokenService = refreshTokenService;
     }
 
+    @Transactional
     public LoginResponse iniciarSesion(LoginRequest request) {
 
         String email = request.email()
@@ -53,7 +58,12 @@ public class LoginService {
             );
         }
 
+        // Genera el JWT de acceso de 15 minutos.
         String token = jwtService.generarToken(usuario);
+
+        // Genera y guarda el refresh token de 7 días.
+        String refreshToken =
+                refreshTokenService.generarRefreshToken(usuario);
 
         return new LoginResponse(
                 token,
@@ -61,7 +71,8 @@ public class LoginService {
                 usuario.getIdUsuario(),
                 usuario.getNombre(),
                 usuario.getEmail(),
-                usuario.getRol().name()
+                usuario.getRol().name(),
+                refreshToken
         );
     }
 }

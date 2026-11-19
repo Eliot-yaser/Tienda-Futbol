@@ -60,7 +60,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 HttpMethod.POST,
                                 "/api/v1/auth/registro",
-                                "/api/v1/auth/login")
+                                "/api/v1/auth/login",
+                                "/api/v1/auth/refresh")
                         .permitAll()
 
                         // Permitir consultar el usuario autenticado
