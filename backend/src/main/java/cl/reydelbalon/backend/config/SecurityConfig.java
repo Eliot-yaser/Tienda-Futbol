@@ -76,6 +76,10 @@ public class SecurityConfig {
                                 "/api/v1/admin/verificar")
                         .hasRole("ADMINISTRADOR")
 
+                        .requestMatchers(HttpMethod.POST, "/api/v1/compras").authenticated()
+
+                        .requestMatchers("/error").permitAll()
+
                         // Bloquear los demas accesos temporalmente
                         .anyRequest().denyAll());
 
@@ -123,9 +127,11 @@ public class SecurityConfig {
                 "http://127.0.0.1:5173"));
 
         configuracion.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
+
         configuracion.setAllowedHeaders(List.of(
                 "Content-Type",
-                "Accept"));
+                "Accept",
+                "Authorization"));
 
         UrlBasedCorsConfigurationSource origen = new UrlBasedCorsConfigurationSource();
 

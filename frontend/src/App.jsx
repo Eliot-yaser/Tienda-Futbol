@@ -49,6 +49,8 @@ import {
 import { obtenerTallasPorCategoria } from "./utils/tallas";
 import { consultarStockProducto } from "./utils/stockApi.js";
 
+import { registrarCompraApi } from "./utils/comprasApi.js";
+
 // Estilos
 import "./Notificacion.css";
 // Crear una clave diferente para cada usuario
@@ -83,7 +85,12 @@ function cargarCarritoUsuario(usuario) {
     return carritoGuardado.map((item) => {
       const producto = catalogo.find((p) => p.codigo === item.codigo);
       return producto
-        ? { ...item, nombre: producto.nombre, precio: producto.precio, imagen: producto.imagen }
+        ? {
+            ...item,
+            nombre: producto.nombre,
+            precio: producto.precio,
+            imagen: producto.imagen,
+          }
         : item;
     });
   } catch {
@@ -174,10 +181,18 @@ function App() {
       const actualizado = anterior.map((item) => {
         const producto = productos.find((p) => p.codigo === item.codigo);
         if (!producto) return item;
-        if (item.nombre !== producto.nombre || item.precio !== producto.precio ||
-            item.imagen !== producto.imagen) {
+        if (
+          item.nombre !== producto.nombre ||
+          item.precio !== producto.precio ||
+          item.imagen !== producto.imagen
+        ) {
           hayCambios = true;
-          return { ...item, nombre: producto.nombre, precio: producto.precio, imagen: producto.imagen };
+          return {
+            ...item,
+            nombre: producto.nombre,
+            precio: producto.precio,
+            imagen: producto.imagen,
+          };
         }
         return item;
       });
@@ -222,7 +237,12 @@ function App() {
 
   // Verificar el stock actual en MySQL antes de sumar unidades al carrito.
   // La validacion definitiva de una compra debe realizarla el backend.
-  const comprobarStock = async (carritoActual, producto, talla = null, unidades = 1) => {
+  const comprobarStock = async (
+    carritoActual,
+    producto,
+    talla = null,
+    unidades = 1,
+  ) => {
     if (!producto?.idProducto) {
       return "No se pudo identificar el producto en MySQL. Intenta recargar la tienda.";
     }
@@ -235,7 +255,9 @@ function App() {
     // Revalidar tanto el stock general como el de cada talla con datos del servidor.
     const apiBase = import.meta.env.VITE_API_URL || "http://localhost:8080";
     const [respuestaProducto, inventario] = await Promise.all([
-      fetch(`${apiBase}/api/v1/productos/${producto.idProducto}`, { cache: "no-store" }),
+      fetch(`${apiBase}/api/v1/productos/${producto.idProducto}`, {
+        cache: "no-store",
+      }),
       consultarStockProducto(producto.idProducto),
     ]);
     if (!respuestaProducto.ok) {
@@ -267,8 +289,10 @@ function App() {
       }
 
       const cantidadTallaEnCarrito = carritoActual
-        .filter((item) => item.codigo === producto.codigo &&
-          (item.talla ?? null) === talla)
+        .filter(
+          (item) =>
+            item.codigo === producto.codigo && (item.talla ?? null) === talla,
+        )
         .reduce((total, item) => total + item.cantidad, 0);
 
       if (cantidadTallaEnCarrito + unidades > stockTalla) {
@@ -324,74 +348,36 @@ function App() {
   // CONFIRMAR COMPRA SIMULADA
   // ==========================================
 
-  const confirmarCompra = ({ cliente, entrega }) => {
+  const confirmarCompra = async ({ cliente, entrega }) => {
     try {
-      // Leer inventario actual
-      const inventarioActual = cargarInventario();
+      // El JWT debe provenir del login conectado a Spring Boot.
+      const token = usuario?.token;
 
-      // Validar la compra y preparar descuentos
-      const inventarioNuevo = prepararCompra(
+      // Registrar la compra mediante la API REST.
+      const respuesta = await registrarCompraApi(
+        { cliente, entrega },
         carrito,
-        productos,
-        inventarioActual,
+        token,
       );
 
-      // Recuperar ventas anteriores
-      const ventasGuardadas = JSON.parse(
-        localStorage.getItem("rey-balon-ventas") || "[]",
-      );
-
-      if (!Array.isArray(ventasGuardadas)) {
-        throw new Error("No se pudo leer el historial de ventas.");
-      }
-
-      // Preparar registro de venta
+      // Adaptar la respuesta al formato que utiliza React.
       const venta = {
-        id: Date.now(),
+        id: respuesta.idBoleta,
         fecha: new Date().toISOString(),
         cliente,
         entrega,
-
-        productos: carrito.map((producto) => ({
-          codigo: producto.codigo,
-          nombre: producto.nombre,
-          talla: producto.talla ?? null,
-          precio: producto.precio,
-          cantidad: producto.cantidad,
-        })),
-
-        total: calcularTotalCarrito(carrito),
+        productos: respuesta.productos,
+        total: respuesta.total,
+        estado: respuesta.estado,
+        resultadoPago: respuesta.resultadoPago,
       };
 
-      // Guardar respaldo del historial
-      const respaldoVentas = localStorage.getItem("rey-balon-ventas");
-
-      // Guardar venta
-      localStorage.setItem(
-        "rey-balon-ventas",
-        JSON.stringify([...ventasGuardadas, venta]),
-      );
-
-      try {
-        // Descontar inventario
-        guardarInventario(inventarioNuevo);
-      } catch (error) {
-        // Restaurar historial si falló el guardado
-        if (respaldoVentas === null) {
-          localStorage.removeItem("rey-balon-ventas");
-        } else {
-          localStorage.setItem("rey-balon-ventas", respaldoVentas);
-        }
-
-        throw error;
-      }
-
-      // Vaciar carrito después de comprar
+      // Vaciar el carrito solamente si el backend confirmó la compra.
       setCarrito([]);
 
       return {
         exito: true,
-        mensaje: "¡Compra realizada correctamente!",
+        mensaje: "¡Compra registrada correctamente!",
         venta,
       };
     } catch (error) {
@@ -525,16 +511,15 @@ function App() {
           }
         />
 
-        
-      {/* Listado de usuarios del administrador */}
-      <Route
-        path="/admin/usuarios"
-        element={
-          <RutaProtegida usuario={usuario} rolPermitido="Administrador">
-            <AdminUsuarios />
-          </RutaProtegida>
-        }
-      />
+        {/* Listado de usuarios del administrador */}
+        <Route
+          path="/admin/usuarios"
+          element={
+            <RutaProtegida usuario={usuario} rolPermitido="Administrador">
+              <AdminUsuarios />
+            </RutaProtegida>
+          }
+        />
 
         <Route
           path="/admin/inventario"
@@ -580,13 +565,13 @@ function App() {
         <Route
           path="/productos"
           element={
-            
-          <main className="container py-5">
-            <section id="productos">
-              <h1 className="fw-bold mb-2">Nuestros productos</h1>
-              <p className="text-muted mb-4">
-                Descubre camisetas, balones y accesorios para disfrutar del fútbol.
-              </p>
+            <main className="container py-5">
+              <section id="productos">
+                <h1 className="fw-bold mb-2">Nuestros productos</h1>
+                <p className="text-muted mb-4">
+                  Descubre camisetas, balones y accesorios para disfrutar del
+                  fútbol.
+                </p>
 
                 {/* Filtro */}
                 <div className="mb-3">
@@ -661,12 +646,22 @@ function App() {
         />
 
         {/* Checkout de demostración y resultados */}
-        <Route path="/checkout" element={
-          <Checkout carrito={carrito} totalCarrito={totalCarrito} usuario={usuario}
-            confirmarCompra={confirmarCompra} />
-        } />
+        <Route
+          path="/checkout"
+          element={
+            <Checkout
+              carrito={carrito}
+              totalCarrito={totalCarrito}
+              usuario={usuario}
+              confirmarCompra={confirmarCompra}
+            />
+          }
+        />
         <Route path="/compra-exitosa" element={<CompraResultado exito />} />
-        <Route path="/compra-error" element={<CompraResultado exito={false} />} />
+        <Route
+          path="/compra-error"
+          element={<CompraResultado exito={false} />}
+        />
 
         {/* Registro */}
         <Route
