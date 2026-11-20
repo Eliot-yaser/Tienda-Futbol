@@ -506,7 +506,7 @@ function App() {
           path="/admin/productos"
           element={
             <RutaProtegida usuario={usuario} rolPermitido="Administrador">
-              <AdminProductos />
+              <AdminProductos usuario={usuario} />
             </RutaProtegida>
           }
         />

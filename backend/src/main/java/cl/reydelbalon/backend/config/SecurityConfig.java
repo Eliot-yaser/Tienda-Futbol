@@ -26,119 +26,126 @@ import java.util.List;
 @Configuration
 public class SecurityConfig {
 
-    @Bean
+        @Bean
 
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http,
-            UsuarioRepository usuarioRepository) throws Exception {
+        public SecurityFilterChain securityFilterChain(
+                        HttpSecurity http,
+                        UsuarioRepository usuarioRepository) throws Exception {
 
-        http
-                .cors(cors -> cors
-                        .configurationSource(corsConfigurationSource()))
+                http
+                                .cors(cors -> cors
+                                                .configurationSource(corsConfigurationSource()))
 
-                .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/api/**"))
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                .csrf(csrf -> csrf
+                                                .ignoringRequestMatchers("/api/**"))
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt
-                                .jwtAuthenticationConverter(jwtAuthenticationConverter(usuarioRepository))))
+                                .oauth2ResourceServer(oauth2 -> oauth2
+                                                .jwt(jwt -> jwt
+                                                                .jwtAuthenticationConverter(jwtAuthenticationConverter(
+                                                                                usuarioRepository))))
 
-                .authorizeHttpRequests(auth -> auth
+                                .authorizeHttpRequests(auth -> auth
 
-                        // Permitir consultas publicas del catalogo
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/v1/productos",
-                                "/api/v1/productos/**",
-                                "/api/v1/categorias",
-                                "/api/v1/categorias/**")
-                        .permitAll()
+                                                // Permitir consultas publicas del catalogo
+                                                .requestMatchers(
+                                                                HttpMethod.GET,
+                                                                "/api/v1/productos",
+                                                                "/api/v1/productos/**",
+                                                                "/api/v1/categorias",
+                                                                "/api/v1/categorias/**")
+                                                .permitAll()
 
-                        // Permitir registro e inicio de sesion
-                        .requestMatchers(
-                                HttpMethod.POST,
-                                "/api/v1/auth/registro",
-                                "/api/v1/auth/login",
-                                "/api/v1/auth/refresh")
-                        .permitAll()
+                                                // Permitir registro e inicio de sesion
+                                                .requestMatchers(
+                                                                HttpMethod.POST,
+                                                                "/api/v1/auth/registro",
+                                                                "/api/v1/auth/login",
+                                                                "/api/v1/auth/refresh")
+                                                .permitAll()
 
-                        // Permitir consultar el usuario autenticado
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/v1/auth/me")
-                        .authenticated()
+                                                // Permitir consultar el usuario autenticado
+                                                .requestMatchers(
+                                                                HttpMethod.GET,
+                                                                "/api/v1/auth/me")
+                                                .authenticated()
 
-                        // Permitir acceso solo a administradores
-                        .requestMatchers(
-                                HttpMethod.GET,
-                                "/api/v1/admin/verificar")
-                        .hasRole("ADMINISTRADOR")
+                                                // Permitir acceso solo a administradores
+                                                .requestMatchers(
+                                                                HttpMethod.GET,
+                                                                "/api/v1/admin/verificar")
+                                                .hasRole("ADMINISTRADOR")
 
-                        .requestMatchers(HttpMethod.POST, "/api/v1/compras").authenticated()
+                                                // Proteger todas las operaciones del CRUD administrativo
+                                                .requestMatchers("/api/v1/admin/productos",
+                                                                "/api/v1/admin/productos/**")
+                                                .hasRole("ADMINISTRADOR")
 
-                        .requestMatchers("/error").permitAll()
+                                                .requestMatchers(HttpMethod.POST, "/api/v1/compras").authenticated()
 
-                        // Bloquear los demas accesos temporalmente
-                        .anyRequest().denyAll());
+                                                .requestMatchers("/error").permitAll()
 
-        return http.build();
-    }
+                                                // Bloquear los demas accesos temporalmente
+                                                .anyRequest().denyAll());
 
-    @Bean
+                return http.build();
+        }
 
-    public JwtAuthenticationConverter jwtAuthenticationConverter(
-            UsuarioRepository usuarioRepository) {
+        @Bean
 
-        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        public JwtAuthenticationConverter jwtAuthenticationConverter(
+                        UsuarioRepository usuarioRepository) {
 
-        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+                JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
 
-            String email = jwt.getSubject();
+                converter.setJwtGrantedAuthoritiesConverter(jwt -> {
 
-            Usuario usuario = usuarioRepository.findByEmail(email)
-                    .orElseThrow(() -> new OAuth2AuthenticationException(
-                            new OAuth2Error("invalid_token"),
-                            "Usuario no encontrado"));
+                        String email = jwt.getSubject();
 
-            if (!Boolean.TRUE.equals(usuario.getActivo())) {
-                throw new OAuth2AuthenticationException(
-                        new OAuth2Error("invalid_token"),
-                        "Usuario inactivo");
-            }
+                        Usuario usuario = usuarioRepository.findByEmail(email)
+                                        .orElseThrow(() -> new OAuth2AuthenticationException(
+                                                        new OAuth2Error("invalid_token"),
+                                                        "Usuario no encontrado"));
 
-            return List.of(
-                    new SimpleGrantedAuthority(
-                            "ROLE_" + usuario.getRol().name()));
-        });
+                        if (!Boolean.TRUE.equals(usuario.getActivo())) {
+                                throw new OAuth2AuthenticationException(
+                                                new OAuth2Error("invalid_token"),
+                                                "Usuario inactivo");
+                        }
 
-        return converter;
-    }
+                        return List.of(
+                                        new SimpleGrantedAuthority(
+                                                        "ROLE_" + usuario.getRol().name()));
+                });
 
-    @Bean
-    public UrlBasedCorsConfigurationSource corsConfigurationSource() {
+                return converter;
+        }
 
-        CorsConfiguration configuracion = new CorsConfiguration();
+        @Bean
+        public UrlBasedCorsConfigurationSource corsConfigurationSource() {
 
-        // Origenes locales permitidos para React + Vite
-        configuracion.setAllowedOrigins(List.of(
-                "http://localhost:5173",
-                "http://127.0.0.1:5173"));
+                CorsConfiguration configuracion = new CorsConfiguration();
 
-        configuracion.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
+                // Origenes locales permitidos para React + Vite
+                configuracion.setAllowedOrigins(List.of(
+                                "http://localhost:5173",
+                                "http://127.0.0.1:5173"));
 
-        configuracion.setAllowedHeaders(List.of(
-                "Content-Type",
-                "Accept",
-                "Authorization"));
+                configuracion.setAllowedMethods(
+                                List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
 
-        UrlBasedCorsConfigurationSource origen = new UrlBasedCorsConfigurationSource();
+                configuracion.setAllowedHeaders(List.of(
+                                "Content-Type",
+                                "Accept",
+                                "Authorization"));
 
-        origen.registerCorsConfiguration(
-                "/api/**",
-                configuracion);
+                UrlBasedCorsConfigurationSource origen = new UrlBasedCorsConfigurationSource();
 
-        return origen;
-    }
+                origen.registerCorsConfiguration(
+                                "/api/**",
+                                configuracion);
+
+                return origen;
+        }
 }

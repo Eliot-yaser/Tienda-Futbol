@@ -7,6 +7,8 @@ import cl.reydelbalon.backend.service.BoletaService.CompraRespuesta;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,10 +23,20 @@ public class BoletaController {
 
     @PostMapping
     public ResponseEntity<CompraRespuesta> registrarCompra(
-            @RequestBody SolicitudCompra solicitud) {
+            @RequestBody SolicitudCompra solicitud,
+            @AuthenticationPrincipal Jwt jwt) {
+
+        if (jwt == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String emailUsuario = jwt.getSubject();
 
         CompraRespuesta respuesta =
-                boletaService.registrarCompraSimulada(solicitud);
+                boletaService.registrarCompraSimulada(
+                        solicitud,
+                        emailUsuario
+                );
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

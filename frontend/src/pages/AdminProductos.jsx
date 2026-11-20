@@ -1,34 +1,66 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { useProductos } from "../hooks/useProductos.js";
-import { crearProducto, editarProducto, eliminarProducto } from "../utils/productos.js";
+
+import { useProductosAdmin } from "../hooks/useProductosAdmin.js";
+
+import {
+  solicitarAdmin,
+  prepararProductoAdmin,
+} from "../utils/productosAdminApi.js";
+
 import "./AdminProductos.css";
 
 const FORMULARIO_VACIO = {
-  codigo: "", nombre: "", descripcion: "", categoria: "Camisetas",
-  precio: "", stock: "", stockCritico: "", imagen: "",
-  enOferta: false, precioAnterior: "",
+  codigo: "",
+  nombre: "",
+  descripcion: "",
+  categoria: "Camisetas",
+  precio: "",
+  stock: "",
+  stockCritico: "",
+  imagen: "",
+  enOferta: false,
+  precioAnterior: "",
 };
-const CLAVES_CATEGORIA = ["Camisetas", "Shorts", "Calzado", "Balones", "Medias", "Accesorios", "Guantes"];
+const CLAVES_CATEGORIA = [
+  "Camisetas",
+  "Shorts",
+  "Calzado",
+  "Balones",
+  "Medias",
+  "Canilleras",
+  "Guantes",
+];
 
-export default function AdminProductos() {
-  const productos = useProductos();
+export default function AdminProductos({ usuario }) {
+  const {
+    productos,
+    cargando,
+    error: errorCarga,
+    recargar,
+  } = useProductosAdmin(usuario?.token);
+
   const [formulario, setFormulario] = useState(FORMULARIO_VACIO);
   const [editando, setEditando] = useState(null);
   const [busqueda, setBusqueda] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
+  const [guardando, setGuardando] = useState(false);
 
   const categorias = useMemo(
     () => [...new Set(productos.map((p) => p.categoria))].filter(Boolean),
     [productos],
   );
   // Categorías permitidas por el catálogo de la evaluación.
-  const categoriasDisponibles = categorias.length ? categorias : CLAVES_CATEGORIA;
+  const categoriasDisponibles = categorias.length
+    ? categorias
+    : CLAVES_CATEGORIA;
 
   const visibles = productos.filter((p) =>
     [p.codigo, p.nombre, p.categoria].some((valor) =>
-      String(valor || "").toLowerCase().includes(busqueda.trim().toLowerCase()),
+      String(valor || "")
+        .toLowerCase()
+        .includes(busqueda.trim().toLowerCase()),
     ),
   );
 
@@ -47,7 +79,8 @@ export default function AdminProductos() {
 
   const editar = (producto) => {
     setEditando(producto.codigo);
-    setFormulario({ ...producto,
+    setFormulario({
+      ...producto,
       enOferta: producto.enOferta === true,
       precioAnterior: producto.precioAnterior ?? "",
     });
@@ -56,16 +89,45 @@ export default function AdminProductos() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const guardar = (evento) => {
+  const guardar = async (evento) => {
     evento.preventDefault();
+
+    if (guardando) return;
+
+    setGuardando(true);
+
     try {
       if (editando) {
-        editarProducto(editando, formulario);
-        setMensaje(`Producto ${editando} actualizado correctamente.`);
+        const productoOriginal = productos.find(
+          (producto) => producto.codigo === editando,
+        );
+
+        if (!productoOriginal) {
+          throw new Error("No se encontró el producto que deseas editar.");
+        }
+
+        const datos = prepararProductoAdmin(formulario);
+
+        await solicitarAdmin(
+          `/${productoOriginal.idProducto}`,
+          "PUT",
+          usuario?.token,
+          datos,
+        );
+
+        await recargar();
+
+        setMensaje(`Producto ${editando} actualizado correctamente en MySQL.`);
       } else {
-        const nuevo = crearProducto(formulario);
-        setMensaje(`Producto ${nuevo.codigo} creado correctamente.`);
+        const datos = prepararProductoAdmin(formulario);
+
+        const nuevo = await solicitarAdmin("", "POST", usuario?.token, datos);
+
+        await recargar();
+
+        setMensaje(`Producto ${nuevo.codigo} creado correctamente en MySQL.`);
       }
+
       setEditando(null);
       setFormulario(FORMULARIO_VACIO);
       setError("");
@@ -75,15 +137,56 @@ export default function AdminProductos() {
     }
   };
 
-  const eliminar = (producto) => {
-    if (!window.confirm(`¿Eliminar ${producto.codigo} - ${producto.nombre}?`)) return;
+  const eliminar = async (producto) => {
+    if (
+      !window.confirm(`¿Desactivar ${producto.codigo} - ${producto.nombre}?`)
+    ) {
+      return;
+    }
+
     try {
-      eliminarProducto(producto.codigo);
-      if (editando === producto.codigo) limpiar();
+      await solicitarAdmin(`/${producto.idProducto}`, "DELETE", usuario?.token);
+
+      await recargar();
+
+      if (editando === producto.codigo) {
+        limpiar();
+      }
+
       setError("");
-      setMensaje(`Producto ${producto.codigo} eliminado correctamente.`);
+      setMensaje(
+        `Producto ${producto.codigo} desactivado correctamente en MySQL.`,
+      );
     } catch (err) {
-      setError(err.message || "No fue posible eliminar el producto.");
+      setError(err.message || "No fue posible guardar el producto.");
+      setMensaje("");
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const reactivar = async (producto) => {
+    if (
+      !window.confirm(`¿Reactivar ${producto.codigo} - ${producto.nombre}?`)
+    ) {
+      return;
+    }
+
+    try {
+      await solicitarAdmin(
+        `/${producto.idProducto}/activar`,
+        "PATCH",
+        usuario?.token,
+      );
+
+      await recargar();
+
+      setError("");
+      setMensaje(
+        `Producto ${producto.codigo} reactivado correctamente en MySQL.`,
+      );
+    } catch (err) {
+      setError(err.message || "No fue posible reactivar el producto.");
       setMensaje("");
     }
   };
@@ -92,93 +195,226 @@ export default function AdminProductos() {
     <main className="container py-5 admin-productos">
       <header className="bg-dark text-white rounded-4 p-4 mb-4">
         <h1>📦 Gestión de productos</h1>
-        <p className="mb-0">Crea, edita y elimina productos del catálogo de Rey del Balón.</p>
+        <p className="mb-0">
+          Crea, edita y activa o desactiva productos del catálogo de Rey del
+          Balón.
+        </p>
       </header>
 
-      {error && <div className="alert alert-danger" role="alert">{error}</div>}
-      {mensaje && <div className="alert alert-success" role="status">{mensaje}</div>}
+      {errorCarga && (
+        <div className="alert alert-warning" role="alert">
+          {errorCarga}
+        </div>
+      )}
+      {cargando && <p className="text-secondary">Cargando productos...</p>}
 
-      <section className="card shadow-sm mb-4" aria-label="Formulario de producto">
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          {error}
+        </div>
+      )}
+      {mensaje && (
+        <div className="alert alert-success" role="status">
+          {mensaje}
+        </div>
+      )}
+
+      <section
+        className="card shadow-sm mb-4"
+        aria-label="Formulario de producto"
+      >
         <div className="card-body p-4">
-          <h2 className="h4 fw-bold mb-3">{editando ? `Editar producto ${editando}` : "Agregar producto"}</h2>
+          <h2 className="h4 fw-bold mb-3">
+            {editando ? `Editar producto ${editando}` : "Agregar producto"}
+          </h2>
           <form onSubmit={guardar}>
             <div className="row g-3">
               <div className="col-12 col-md-4">
-                <label htmlFor="producto-codigo" className="form-label">Código</label>
-                <input id="producto-codigo" className="form-control" required maxLength={20}
-                  placeholder="EJ-001" value={formulario.codigo}
-                  disabled={Boolean(editando)} onChange={(e) => cambiar("codigo", e.target.value)} />
+                <label htmlFor="producto-codigo" className="form-label">
+                  Código
+                </label>
+                <input
+                  id="producto-codigo"
+                  className="form-control"
+                  required
+                  maxLength={20}
+                  placeholder="EJ-001"
+                  value={formulario.codigo}
+                  disabled={Boolean(editando)}
+                  onChange={(e) => cambiar("codigo", e.target.value)}
+                />
               </div>
               <div className="col-12 col-md-8">
-                <label htmlFor="producto-nombre" className="form-label">Nombre</label>
-                <input id="producto-nombre" className="form-control" required value={formulario.nombre}
-                  onChange={(e) => cambiar("nombre", e.target.value)} />
+                <label htmlFor="producto-nombre" className="form-label">
+                  Nombre
+                </label>
+                <input
+                  id="producto-nombre"
+                  className="form-control"
+                  required
+                  value={formulario.nombre}
+                  onChange={(e) => cambiar("nombre", e.target.value)}
+                />
               </div>
               <div className="col-12">
-                <label htmlFor="producto-descripcion" className="form-label">Descripción</label>
-                <textarea id="producto-descripcion" className="form-control" rows={2} required
-                  value={formulario.descripcion} onChange={(e) => cambiar("descripcion", e.target.value)} />
+                <label htmlFor="producto-descripcion" className="form-label">
+                  Descripción
+                </label>
+                <textarea
+                  id="producto-descripcion"
+                  className="form-control"
+                  rows={2}
+                  required
+                  value={formulario.descripcion}
+                  onChange={(e) => cambiar("descripcion", e.target.value)}
+                />
               </div>
               <div className="col-12 col-md-6">
-                <label htmlFor="producto-categoria" className="form-label">Categoría</label>
-                <select id="producto-categoria" className="form-select" required value={formulario.categoria}
-                  disabled={Boolean(editando)} onChange={(e) => cambiar("categoria", e.target.value)}>
-                  {categoriasDisponibles.map((categoria) =>
-                    <option key={categoria} value={categoria}>{categoria}</option>
-                  )}
+                <label htmlFor="producto-categoria" className="form-label">
+                  Categoría
+                </label>
+                <select
+                  id="producto-categoria"
+                  className="form-select"
+                  required
+                  value={formulario.categoria}
+                  disabled={Boolean(editando)}
+                  onChange={(e) => cambiar("categoria", e.target.value)}
+                >
+                  {categoriasDisponibles.map((categoria) => (
+                    <option key={categoria} value={categoria}>
+                      {categoria}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="col-12 col-md-6">
-                <label htmlFor="producto-imagen" className="form-label">URL de imagen</label>
-                <input id="producto-imagen" type="url" className="form-control" required
-                  placeholder="https://..." value={formulario.imagen}
-                  onChange={(e) => cambiar("imagen", e.target.value)} />
+                <label htmlFor="producto-imagen" className="form-label">
+                  URL de imagen
+                </label>
+                <input
+                  id="producto-imagen"
+                  type="url"
+                  className="form-control"
+                  required
+                  placeholder="https://..."
+                  value={formulario.imagen}
+                  onChange={(e) => cambiar("imagen", e.target.value)}
+                />
               </div>
               <div className="col-12 col-md-4">
-                <label htmlFor="producto-precio" className="form-label">Precio (CLP)</label>
-                <input id="producto-precio" type="number" min="1" step="1" required className="form-control"
-                  value={formulario.precio} onChange={(e) => cambiar("precio", e.target.value)} />
+                <label htmlFor="producto-precio" className="form-label">
+                  Precio (CLP)
+                </label>
+                <input
+                  id="producto-precio"
+                  type="number"
+                  min="1"
+                  step="1"
+                  required
+                  className="form-control"
+                  value={formulario.precio}
+                  onChange={(e) => cambiar("precio", e.target.value)}
+                />
               </div>
               <div className="col-12 col-md-4">
                 <div className="form-check mt-md-4 pt-md-2">
-                  <input id="producto-en-oferta" type="checkbox" className="form-check-input"
+                  <input
+                    id="producto-en-oferta"
+                    type="checkbox"
+                    className="form-check-input"
                     checked={Boolean(formulario.enOferta)}
-                    onChange={(e) => cambiar("enOferta", e.target.checked)} />
-                  <label className="form-check-label fw-semibold" htmlFor="producto-en-oferta">Publicar como oferta</label>
+                    onChange={(e) => cambiar("enOferta", e.target.checked)}
+                  />
+                  <label
+                    className="form-check-label fw-semibold"
+                    htmlFor="producto-en-oferta"
+                  >
+                    Publicar como oferta
+                  </label>
                 </div>
               </div>
               <div className="col-12 col-md-4">
-                <label htmlFor="producto-precio-anterior" className="form-label">Precio anterior (CLP)</label>
-                <input id="producto-precio-anterior" type="number" min="1" step="1" className="form-control"
-                  required={Boolean(formulario.enOferta)} disabled={!formulario.enOferta}
+                <label
+                  htmlFor="producto-precio-anterior"
+                  className="form-label"
+                >
+                  Precio anterior (CLP)
+                </label>
+                <input
+                  id="producto-precio-anterior"
+                  type="number"
+                  min="1"
+                  step="1"
+                  className="form-control"
+                  required={Boolean(formulario.enOferta)}
+                  disabled={!formulario.enOferta}
                   placeholder="Mayor que el precio actual"
                   value={formulario.precioAnterior ?? ""}
-                  onChange={(e) => cambiar("precioAnterior", e.target.value)} />
+                  onChange={(e) => cambiar("precioAnterior", e.target.value)}
+                />
               </div>
               <div className="col-12 col-md-4">
-                <label htmlFor="producto-stock" className="form-label">Stock inicial</label>
-                <input id="producto-stock" type="number" min="0" step="1" required className="form-control"
-                  disabled={Boolean(editando)} value={formulario.stock}
-                  onChange={(e) => cambiar("stock", e.target.value)} />
+                <label htmlFor="producto-stock" className="form-label">
+                  Stock inicial
+                </label>
+                <input
+                  id="producto-stock"
+                  type="number"
+                  min="0"
+                  step="1"
+                  required
+                  className="form-control"
+                  disabled={Boolean(editando)}
+                  value={formulario.stock}
+                  onChange={(e) => cambiar("stock", e.target.value)}
+                />
               </div>
               <div className="col-12 col-md-4">
-                <label htmlFor="producto-stock-critico" className="form-label">Stock crítico</label>
-                <input id="producto-stock-critico" type="number" min="0" step="1" required className="form-control"
+                <label htmlFor="producto-stock-critico" className="form-label">
+                  Stock crítico
+                </label>
+                <input
+                  id="producto-stock-critico"
+                  type="number"
+                  min="0"
+                  step="1"
+                  required
+                  className="form-control"
                   value={formulario.stockCritico}
-                  onChange={(e) => cambiar("stockCritico", e.target.value)} />
+                  onChange={(e) => cambiar("stockCritico", e.target.value)}
+                />
               </div>
             </div>
             <p className="text-secondary small mt-3 mb-3">
-              En edición, la categoría, el código y el stock inicial se conservan para proteger el inventario.
-              Las existencias por talla se configuran desde Inventario. Para publicar una oferta,
-              indica un precio anterior superior al precio actual: el precio actual es el que se cobra.
+              En edición, la categoría, el código y el stock inicial se
+              conservan para proteger el inventario. Las existencias por talla
+              se configuran desde Inventario. Para publicar una oferta, indica
+              un precio anterior superior al precio actual: el precio actual es
+              el que se cobra.
             </p>
             <div className="d-flex flex-wrap gap-2">
-              <button className="btn btn-primary" type="submit">
-                {editando ? "Guardar cambios" : "Crear producto"}
+              <button
+                className="btn btn-primary"
+                type="submit"
+                disabled={guardando || cargando || Boolean(errorCarga)}
+              >
+                {guardando
+                  ? "Guardando..."
+                  : editando
+                    ? "Guardar cambios"
+                    : "Crear producto"}
               </button>
-              <button className="btn btn-outline-secondary" type="button" onClick={limpiar}>Limpiar</button>
-              <Link className="btn btn-outline-dark" to="/admin/inventario">Gestionar inventario</Link>
+              <button
+                className="btn btn-outline-secondary"
+                type="button"
+                onClick={limpiar}
+              >
+                Limpiar
+              </button>
+              <Link className="btn btn-outline-dark" to="/admin/inventario">
+                Gestionar inventario
+              </Link>
             </div>
           </form>
         </div>
@@ -187,39 +423,89 @@ export default function AdminProductos() {
       <section className="card shadow-sm" aria-label="Listado de productos">
         <div className="card-body p-4">
           <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
-            <h2 className="h4 fw-bold mb-0">Catálogo: {productos.length} productos</h2>
+            <h2 className="h4 fw-bold mb-0">
+              Catálogo: {productos.length} productos
+            </h2>
             <div className="admin-productos-buscar">
-              <label htmlFor="buscar-admin-producto" className="visually-hidden">Buscar producto</label>
-              <input id="buscar-admin-producto" className="form-control" placeholder="Buscar por código, nombre o categoría"
-                value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+              <label
+                htmlFor="buscar-admin-producto"
+                className="visually-hidden"
+              >
+                Buscar producto
+              </label>
+              <input
+                id="buscar-admin-producto"
+                className="form-control"
+                placeholder="Buscar por código, nombre o categoría"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
+              />
             </div>
           </div>
           <div className="table-responsive">
             <table className="table table-striped table-hover align-middle">
-              <thead className="table-dark"><tr>
-                <th>Código</th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Oferta</th><th>Acciones</th>
-              </tr></thead>
+              <thead className="table-dark">
+                <tr>
+                  <th>Código</th>
+                  <th>Producto</th>
+                  <th>Categoría</th>
+                  <th>Precio</th>
+                  <th>Oferta</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
               <tbody>
-                {visibles.map((p) =>
+                {visibles.map((p) => (
                   <tr key={p.codigo}>
-                    <td>{p.codigo}</td><td>{p.nombre}</td><td>{p.categoria}</td>
+                    <td>{p.codigo}</td>
+                    <td>{p.nombre}</td>
+                    <td>{p.categoria}</td>
                     <td>${Number(p.precio).toLocaleString("es-CL")}</td>
                     <td>{p.enOferta === true ? "Sí" : "No"}</td>
                     <td>
                       <div className="d-flex flex-wrap gap-2">
-                        <button type="button" className="btn btn-sm btn-outline-primary" onClick={() => editar(p)}>Editar</button>
-                        <button type="button" className="btn btn-sm btn-outline-danger" onClick={() => eliminar(p)}>Eliminar</button>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-primary"
+                          onClick={() => editar(p)}
+                        >
+                          Editar
+                        </button>
+
+                        {p.activo === false ? (
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-outline-success"
+                            onClick={() => reactivar(p)}
+                          >
+                            Reactivar
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-outline-danger"
+                            onClick={() => eliminar(p)}
+                          >
+                            Desactivar
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
-                )}
+                ))}
               </tbody>
             </table>
           </div>
-          {visibles.length === 0 && <p className="text-secondary">No hay productos que coincidan con la búsqueda.</p>}
+          {visibles.length === 0 && (
+            <p className="text-secondary">
+              No hay productos que coincidan con la búsqueda.
+            </p>
+          )}
         </div>
       </section>
-      <Link className="btn btn-link mt-3" to="/admin">← Volver al administrador</Link>
+      <Link className="btn btn-link mt-3" to="/admin">
+        ← Volver al administrador
+      </Link>
     </main>
   );
 }

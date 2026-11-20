@@ -28,11 +28,10 @@ public class ProductoController {
     @GetMapping
     public ResponseEntity<List<ProductoRespuesta>> listar() {
 
-        List<ProductoRespuesta> productos =
-                productoService.listarActivos()
-                        .stream()
-                        .map(ProductoRespuesta::desde)
-                        .toList();
+        List<ProductoRespuesta> productos = productoService.listarActivos()
+                .stream()
+                .map(ProductoRespuesta::desde)
+                .toList();
 
         return ResponseEntity.ok(productos);
     }
@@ -49,21 +48,18 @@ public class ProductoController {
             if (!Boolean.TRUE.equals(producto.getActivo())) {
                 throw new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "Producto no disponible."
-                );
+                        "Producto no disponible.");
             }
 
             return ResponseEntity.ok(
-                    ProductoRespuesta.desde(producto)
-            );
+                    ProductoRespuesta.desde(producto));
 
         } catch (EntityNotFoundException e) {
 
             throw new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
                     e.getMessage(),
-                    e
-            );
+                    e);
         }
     }
 
@@ -80,7 +76,9 @@ public class ProductoController {
             String imagenUrl,
             Boolean enOferta,
             BigDecimal precioAnterior,
-            Long idCategoria
+            Long idCategoria,
+            Boolean activo
+
     ) {
 
         public static ProductoRespuesta desde(Producto producto) {
@@ -96,8 +94,8 @@ public class ProductoController {
                     producto.getImagenUrl(),
                     producto.getEnOferta(),
                     producto.getPrecioAnterior(),
-                    producto.getCategoria().getIdCategoria()
-            );
+                    producto.getCategoria().getIdCategoria(),
+                    producto.getActivo());
         }
     }
 }

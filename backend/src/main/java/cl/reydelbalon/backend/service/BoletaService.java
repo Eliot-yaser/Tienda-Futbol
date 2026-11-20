@@ -5,7 +5,7 @@ import cl.reydelbalon.backend.entity.*;
 import cl.reydelbalon.backend.enums.*;
 import cl.reydelbalon.backend.repository.BoletaRepository;
 import cl.reydelbalon.backend.repository.DetalleBoletaRepository;
-
+import cl.reydelbalon.backend.repository.UsuarioRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.LockModeType;
@@ -21,357 +21,341 @@ import java.util.Locale;
 @Service
 public class BoletaService {
 
-    private final EntityManager entityManager;
-    private final BoletaRepository boletaRepository;
-    private final DetalleBoletaRepository detalleRepository;
+        private final EntityManager entityManager;
+        private final BoletaRepository boletaRepository;
+        private final DetalleBoletaRepository detalleRepository;
+        private final UsuarioRepository usuarioRepository;
 
-    public BoletaService(
-            EntityManager entityManager,
-            BoletaRepository boletaRepository,
-            DetalleBoletaRepository detalleRepository) {
+        public BoletaService(
+                        EntityManager entityManager,
+                        BoletaRepository boletaRepository,
+                        DetalleBoletaRepository detalleRepository,
+                        UsuarioRepository usuarioRepository) {
 
-        this.entityManager = entityManager;
-        this.boletaRepository = boletaRepository;
-        this.detalleRepository = detalleRepository;
-    }
+                this.entityManager = entityManager;
+                this.boletaRepository = boletaRepository;
+                this.detalleRepository = detalleRepository;
+                this.usuarioRepository = usuarioRepository;
+        }
 
-    // Datos que React enviara al backend
-    public record ItemCompra(
-            String codigo,
-            String talla,
-            Integer cantidad
-    ) {}
+        // Datos que React enviara al backend
+        public record ItemCompra(
+                        String codigo,
+                        String talla,
+                        Integer cantidad) {
+        }
 
-    public record SolicitudCompra(
-            String nombreCliente,
-            String apellidosCliente,
-            String emailCliente,
-            TipoEntrega tipoEntrega,
-            String calle,
-            String numero,
-            String departamento,
-            String region,
-            String comuna,
-            String indicaciones,
-            List<ItemCompra> productos
-    ) {}
+        public record SolicitudCompra(
+                        String nombreCliente,
+                        String apellidosCliente,
+                        String emailCliente,
+                        TipoEntrega tipoEntrega,
+                        String calle,
+                        String numero,
+                        String departamento,
+                        String region,
+                        String comuna,
+                        String indicaciones,
+                        List<ItemCompra> productos) {
+        }
 
-    // Datos que devolvera la API
-    public record DetalleRespuesta(
-            String codigo,
-            String nombre,
-            String talla,
-            Integer cantidad,
-            BigDecimal precioUnitario,
-            BigDecimal subtotal
-    ) {}
+        // Datos que devolvera la API
+        public record DetalleRespuesta(
+                        String codigo,
+                        String nombre,
+                        String talla,
+                        Integer cantidad,
+                        BigDecimal precioUnitario,
+                        BigDecimal subtotal) {
+        }
 
-    public record CompraRespuesta(
-            Long idBoleta,
-            BigDecimal total,
-            EstadoBoleta estado,
-            ResultadoPago resultadoPago,
-            List<DetalleRespuesta> productos
-    ) {}
+        public record CompraRespuesta(
+                        Long idBoleta,
+                        BigDecimal total,
+                        EstadoBoleta estado,
+                        ResultadoPago resultadoPago,
+                        List<DetalleRespuesta> productos) {
+        }
 
-    // Registro transaccional de una compra simulada
-    @Transactional
-    public CompraRespuesta registrarCompraSimulada(
-            SolicitudCompra solicitud) {
+        // Registro transaccional de una compra simulada
 
-        validarSolicitud(solicitud);
+        @Transactional
+        public CompraRespuesta registrarCompraSimulada(
+                        SolicitudCompra solicitud,
+                        String emailUsuario) {
 
-        Boleta boleta = new Boleta();
+                validarSolicitud(solicitud);
 
-        boleta.setNombreCliente(
-                solicitud.nombreCliente().trim()
-        );
-        boleta.setApellidosCliente(
-                solicitud.apellidosCliente().trim()
-        );
-        boleta.setEmailCliente(
-                solicitud.emailCliente()
-                        .trim()
-                        .toLowerCase(Locale.ROOT)
-        );
-
-        boleta.setTipoEntrega(solicitud.tipoEntrega());
-        boleta.setCalle(solicitud.calle());
-        boleta.setNumero(solicitud.numero());
-        boleta.setDepartamento(solicitud.departamento());
-        boleta.setRegion(solicitud.region());
-        boleta.setComuna(solicitud.comuna());
-        boleta.setIndicaciones(solicitud.indicaciones());
-
-        // Pago simulado: NO existe pasarela de pago real.
-        boleta.setResultadoPago(ResultadoPago.APROBADO);
-        boleta.setEstado(EstadoBoleta.REGISTRADA);
-
-        List<DetalleBoleta> detalles = new ArrayList<>();
-        List<DetalleRespuesta> respuestas = new ArrayList<>();
-
-        BigDecimal total = BigDecimal.ZERO;
-
-        // Ordenar para mantener un orden estable de bloqueos
-        List<ItemCompra> items = solicitud.productos()
-                .stream()
-                .sorted((a, b) ->
-                        a.codigo().trim().compareToIgnoreCase(
-                                b.codigo().trim()
-                        )
-                )
-                .toList();
-
-        for (ItemCompra item : items) {
-
-            validarItem(item);
-
-            String codigo = item.codigo()
-                    .trim()
-                    .toUpperCase(Locale.ROOT);
-
-            int cantidad = item.cantidad();
-
-            // Bloquear producto durante la transaccion
-            Producto producto = entityManager.createQuery(
-                    "SELECT p FROM Producto p WHERE p.codigo = :codigo",
-                    Producto.class
-            )
-            .setParameter("codigo", codigo)
-            .setLockMode(LockModeType.PESSIMISTIC_WRITE)
-            .getResultStream()
-            .findFirst()
-            .orElseThrow(() ->
-                    new EntityNotFoundException(
-                            "Producto no encontrado: " + codigo
-                    )
-            );
-
-            if (!Boolean.TRUE.equals(producto.getActivo())) {
-                throw new IllegalArgumentException(
-                        "Producto inactivo: " + codigo
-                );
-            }
-
-            if (producto.getStock() == null ||
-                    producto.getStock() < cantidad) {
-                throw new IllegalArgumentException(
-                        "Stock insuficiente para: " + codigo
-                );
-            }
-
-            String talla = item.talla() == null ||
-                    item.talla().isBlank()
-                    ? null
-                    : item.talla().trim().toUpperCase(Locale.ROOT);
-
-            boolean requiereTalla =
-                    !"Balones".equalsIgnoreCase(
-                            producto.getCategoria().getNombre()
-                    );
-
-            if (requiereTalla) {
-
-                if (talla == null) {
-                    throw new IllegalArgumentException(
-                            "Debe seleccionar talla para: " + codigo
-                    );
+                // Identificar al comprador mediante el correo del JWT validado
+                if (emailUsuario == null || emailUsuario.isBlank()) {
+                        throw new IllegalArgumentException(
+                                        "No se pudo identificar al usuario autenticado.");
                 }
 
-                ProductoTalla productoTalla =
-                        entityManager.createQuery(
-                            "SELECT pt FROM ProductoTalla pt " +
-                            "WHERE pt.producto.idProducto = :id " +
-                            "AND pt.talla = :talla",
-                            ProductoTalla.class
-                        )
-                        .setParameter(
-                                "id", producto.getIdProducto()
-                        )
-                        .setParameter("talla", talla)
-                        .setLockMode(LockModeType.PESSIMISTIC_WRITE)
-                        .getResultStream()
-                        .findFirst()
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                    "Talla no disponible: " +
-                                    codigo + " / " + talla
-                                )
-                        );
+                Usuario usuario = usuarioRepository
+                                .findByEmail(emailUsuario.trim())
+                                .orElseThrow(() -> new EntityNotFoundException(
+                                                "Usuario autenticado no encontrado."));
 
-                if (productoTalla.getStock() == null ||
-                        productoTalla.getStock() < cantidad) {
-                    throw new IllegalArgumentException(
-                            "Stock insuficiente en talla " + talla
-                    );
+                if (!Boolean.TRUE.equals(usuario.getActivo())) {
+                        throw new IllegalArgumentException(
+                                        "El usuario autenticado se encuentra inactivo.");
                 }
 
-                productoTalla.setStock(
-                        productoTalla.getStock() - cantidad
-                );
+                // Crear la boleta y asociarla al usuario de MySQL
+                Boleta boleta = new Boleta();
+                boleta.setUsuario(usuario);
 
-            } else if (talla != null) {
+                boleta.setNombreCliente(
+                                solicitud.nombreCliente().trim());
+                boleta.setApellidosCliente(
+                                solicitud.apellidosCliente().trim());
+                boleta.setEmailCliente(
+                                solicitud.emailCliente()
+                                                .trim()
+                                                .toLowerCase(Locale.ROOT));
 
-                throw new IllegalArgumentException(
-                        "Este producto no requiere talla: " + codigo
-                );
-            }
+                boleta.setTipoEntrega(solicitud.tipoEntrega());
+                boleta.setCalle(solicitud.calle());
+                boleta.setNumero(solicitud.numero());
+                boleta.setDepartamento(solicitud.departamento());
+                boleta.setRegion(solicitud.region());
+                boleta.setComuna(solicitud.comuna());
+                boleta.setIndicaciones(solicitud.indicaciones());
 
-            // Descontar stock general
-            producto.setStock(
-                    producto.getStock() - cantidad
-            );
+                // Pago simulado: NO existe pasarela de pago real.
+                boleta.setResultadoPago(ResultadoPago.APROBADO);
+                boleta.setEstado(EstadoBoleta.REGISTRADA);
 
-            // El precio siempre se obtiene desde MySQL
-            BigDecimal precio = producto.getPrecio();
+                List<DetalleBoleta> detalles = new ArrayList<>();
+                List<DetalleRespuesta> respuestas = new ArrayList<>();
 
-            if (precio == null ||
-                    precio.compareTo(BigDecimal.ZERO) <= 0) {
-                throw new IllegalArgumentException(
-                        "Precio invalido para: " + codigo
-                );
-            }
+                BigDecimal total = BigDecimal.ZERO;
 
-            BigDecimal subtotal = precio.multiply(
-                    BigDecimal.valueOf(cantidad)
-            );
+                // Ordenar para mantener un orden estable de bloqueos
+                List<ItemCompra> items = solicitud.productos()
+                                .stream()
+                                .sorted((a, b) -> a.codigo().trim().compareToIgnoreCase(
+                                                b.codigo().trim()))
+                                .toList();
 
-            DetalleBoleta detalle = new DetalleBoleta();
+                for (ItemCompra item : items) {
 
-            detalle.setBoleta(boleta);
-            detalle.setProducto(producto);
-            detalle.setCodigoProducto(producto.getCodigo());
-            detalle.setNombreProducto(producto.getNombre());
-            detalle.setTalla(talla);
-            detalle.setCantidad(cantidad);
-            detalle.setPrecioUnitario(precio);
-            detalle.setSubtotal(subtotal);
+                        validarItem(item);
 
-            detalles.add(detalle);
+                        String codigo = item.codigo()
+                                        .trim()
+                                        .toUpperCase(Locale.ROOT);
 
-            respuestas.add(new DetalleRespuesta(
-                    producto.getCodigo(),
-                    producto.getNombre(),
-                    talla,
-                    cantidad,
-                    precio,
-                    subtotal
-            ));
+                        int cantidad = item.cantidad();
 
-            total = total.add(subtotal);
+                        // Bloquear producto durante la transaccion
+                        Producto producto = entityManager.createQuery(
+                                        "SELECT p FROM Producto p WHERE p.codigo = :codigo",
+                                        Producto.class)
+                                        .setParameter("codigo", codigo)
+                                        .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+                                        .getResultStream()
+                                        .findFirst()
+                                        .orElseThrow(() -> new EntityNotFoundException(
+                                                        "Producto no encontrado: " + codigo));
+
+                        if (!Boolean.TRUE.equals(producto.getActivo())) {
+                                throw new IllegalArgumentException(
+                                                "Producto inactivo: " + codigo);
+                        }
+
+                        if (producto.getStock() == null ||
+                                        producto.getStock() < cantidad) {
+                                throw new IllegalArgumentException(
+                                                "Stock insuficiente para: " + codigo);
+                        }
+
+                        String talla = item.talla() == null ||
+                                        item.talla().isBlank()
+                                                        ? null
+                                                        : item.talla().trim().toUpperCase(Locale.ROOT);
+
+                        boolean requiereTalla = !"Balones".equalsIgnoreCase(
+                                        producto.getCategoria().getNombre());
+
+                        if (requiereTalla) {
+
+                                if (talla == null) {
+                                        throw new IllegalArgumentException(
+                                                        "Debe seleccionar talla para: " + codigo);
+                                }
+
+                                ProductoTalla productoTalla = entityManager.createQuery(
+                                                "SELECT pt FROM ProductoTalla pt " +
+                                                                "WHERE pt.producto.idProducto = :id " +
+                                                                "AND pt.talla = :talla",
+                                                ProductoTalla.class)
+                                                .setParameter(
+                                                                "id", producto.getIdProducto())
+                                                .setParameter("talla", talla)
+                                                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+                                                .getResultStream()
+                                                .findFirst()
+                                                .orElseThrow(() -> new IllegalArgumentException(
+                                                                "Talla no disponible: " +
+                                                                                codigo + " / " + talla));
+
+                                if (productoTalla.getStock() == null ||
+                                                productoTalla.getStock() < cantidad) {
+                                        throw new IllegalArgumentException(
+                                                        "Stock insuficiente en talla " + talla);
+                                }
+
+                                productoTalla.setStock(
+                                                productoTalla.getStock() - cantidad);
+
+                        } else if (talla != null) {
+
+                                throw new IllegalArgumentException(
+                                                "Este producto no requiere talla: " + codigo);
+                        }
+
+                        // Descontar stock general
+                        producto.setStock(
+                                        producto.getStock() - cantidad);
+
+                        // El precio siempre se obtiene desde MySQL
+                        BigDecimal precio = producto.getPrecio();
+
+                        if (precio == null ||
+                                        precio.compareTo(BigDecimal.ZERO) <= 0) {
+                                throw new IllegalArgumentException(
+                                                "Precio invalido para: " + codigo);
+                        }
+
+                        BigDecimal subtotal = precio.multiply(
+                                        BigDecimal.valueOf(cantidad));
+
+                        DetalleBoleta detalle = new DetalleBoleta();
+
+                        detalle.setBoleta(boleta);
+                        detalle.setProducto(producto);
+                        detalle.setCodigoProducto(producto.getCodigo());
+                        detalle.setNombreProducto(producto.getNombre());
+                        detalle.setTalla(talla);
+                        detalle.setCantidad(cantidad);
+                        detalle.setPrecioUnitario(precio);
+                        detalle.setSubtotal(subtotal);
+
+                        detalles.add(detalle);
+
+                        respuestas.add(new DetalleRespuesta(
+                                        producto.getCodigo(),
+                                        producto.getNombre(),
+                                        talla,
+                                        cantidad,
+                                        precio,
+                                        subtotal));
+
+                        total = total.add(subtotal);
+                }
+
+                boleta.setTotal(total);
+
+                // Guardar boleta y luego sus detalles
+                Boleta guardada = boletaRepository.saveAndFlush(boleta);
+
+                detalleRepository.saveAll(detalles);
+                detalleRepository.flush();
+
+                return new CompraRespuesta(
+                                guardada.getIdBoleta(),
+                                total,
+                                guardada.getEstado(),
+                                guardada.getResultadoPago(),
+                                respuestas);
         }
 
-        boleta.setTotal(total);
+        // Validar la solicitud de compra
+        private void validarSolicitud(SolicitudCompra solicitud) {
 
-        // Guardar boleta y luego sus detalles
-        Boleta guardada = boletaRepository.saveAndFlush(boleta);
+                if (solicitud == null) {
+                        throw new IllegalArgumentException(
+                                        "La solicitud es obligatoria.");
+                }
 
-        detalleRepository.saveAll(detalles);
-        detalleRepository.flush();
+                validarTexto(
+                                solicitud.nombreCliente(), 80, "Nombre");
+                validarTexto(
+                                solicitud.apellidosCliente(), 120, "Apellidos");
+                validarTexto(
+                                solicitud.emailCliente(), 150, "Email");
 
-        return new CompraRespuesta(
-                guardada.getIdBoleta(),
-                total,
-                guardada.getEstado(),
-                guardada.getResultadoPago(),
-                respuestas
-        );
-    }
+                if (!solicitud.emailCliente().trim()
+                                .matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+                        throw new IllegalArgumentException(
+                                        "El correo electronico no es valido.");
+                }
 
-    // Validar la solicitud de compra
-    private void validarSolicitud(SolicitudCompra solicitud) {
+                if (solicitud.tipoEntrega() == null) {
+                        throw new IllegalArgumentException(
+                                        "Debe indicar un tipo de entrega.");
+                }
 
-        if (solicitud == null) {
-            throw new IllegalArgumentException(
-                    "La solicitud es obligatoria."
-            );
+                if (solicitud.tipoEntrega() == TipoEntrega.DOMICILIO) {
+                        validarTexto(solicitud.calle(), 150, "Calle");
+                        validarTexto(solicitud.numero(), 20, "Numero");
+                        validarTexto(solicitud.region(), 100, "Region");
+                        validarTexto(solicitud.comuna(), 100, "Comuna");
+                }
+
+                validarLongitud(solicitud.calle(), 150, "Calle");
+                validarLongitud(solicitud.numero(), 20, "Numero");
+                validarLongitud(solicitud.departamento(), 50, "Departamento");
+                validarLongitud(solicitud.region(), 100, "Region");
+                validarLongitud(solicitud.comuna(), 100, "Comuna");
+                validarLongitud(solicitud.indicaciones(), 500, "Indicaciones");
+
+                if (solicitud.productos() == null ||
+                                solicitud.productos().isEmpty() ||
+                                solicitud.productos().size() > 50) {
+                        throw new IllegalArgumentException(
+                                        "Debe indicar entre 1 y 50 items.");
+                }
+
+                solicitud.productos().forEach(this::validarItem);
         }
 
-        validarTexto(
-                solicitud.nombreCliente(), 80, "Nombre"
-        );
-        validarTexto(
-                solicitud.apellidosCliente(), 120, "Apellidos"
-        );
-        validarTexto(
-                solicitud.emailCliente(), 150, "Email"
-        );
+        private void validarItem(ItemCompra item) {
 
-        if (!solicitud.emailCliente().trim()
-                .matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
-            throw new IllegalArgumentException(
-                    "El correo electronico no es valido."
-            );
+                if (item == null ||
+                                item.codigo() == null ||
+                                item.codigo().isBlank() ||
+                                item.codigo().trim().length() > 20 ||
+                                item.cantidad() == null ||
+                                item.cantidad() <= 0 ||
+                                item.cantidad() > 100) {
+
+                        throw new IllegalArgumentException(
+                                        "Codigo o cantidad del producto invalida.");
+                }
+
+                validarLongitud(item.talla(), 10, "Talla");
         }
 
-        if (solicitud.tipoEntrega() == null) {
-            throw new IllegalArgumentException(
-                    "Debe indicar un tipo de entrega."
-            );
+        private void validarTexto(
+                        String valor, int maximo, String campo) {
+
+                if (valor == null ||
+                                valor.isBlank() ||
+                                valor.trim().length() > maximo) {
+                        throw new IllegalArgumentException(
+                                        "Campo invalido: " + campo);
+                }
         }
 
-        if (solicitud.tipoEntrega() == TipoEntrega.DOMICILIO) {
-            validarTexto(solicitud.calle(), 150, "Calle");
-            validarTexto(solicitud.numero(), 20, "Numero");
-            validarTexto(solicitud.region(), 100, "Region");
-            validarTexto(solicitud.comuna(), 100, "Comuna");
+        private void validarLongitud(
+                        String valor, int maximo, String campo) {
+
+                if (valor != null && valor.length() > maximo) {
+                        throw new IllegalArgumentException(
+                                        "El campo supera el largo permitido: " + campo);
+                }
         }
-
-        validarLongitud(solicitud.calle(), 150, "Calle");
-        validarLongitud(solicitud.numero(), 20, "Numero");
-        validarLongitud(solicitud.departamento(), 50, "Departamento");
-        validarLongitud(solicitud.region(), 100, "Region");
-        validarLongitud(solicitud.comuna(), 100, "Comuna");
-        validarLongitud(solicitud.indicaciones(), 500, "Indicaciones");
-
-        if (solicitud.productos() == null ||
-                solicitud.productos().isEmpty() ||
-                solicitud.productos().size() > 50) {
-            throw new IllegalArgumentException(
-                    "Debe indicar entre 1 y 50 items."
-            );
-        }
-
-        solicitud.productos().forEach(this::validarItem);
-    }
-
-    private void validarItem(ItemCompra item) {
-
-        if (item == null ||
-                item.codigo() == null ||
-                item.codigo().isBlank() ||
-                item.codigo().trim().length() > 20 ||
-                item.cantidad() == null ||
-                item.cantidad() <= 0 ||
-                item.cantidad() > 100) {
-
-            throw new IllegalArgumentException(
-                    "Codigo o cantidad del producto invalida."
-            );
-        }
-
-        validarLongitud(item.talla(), 10, "Talla");
-    }
-
-    private void validarTexto(
-            String valor, int maximo, String campo) {
-
-        if (valor == null ||
-                valor.isBlank() ||
-                valor.trim().length() > maximo) {
-            throw new IllegalArgumentException(
-                    "Campo invalido: " + campo
-            );
-        }
-    }
-
-    private void validarLongitud(
-            String valor, int maximo, String campo) {
-
-        if (valor != null && valor.length() > maximo) {
-            throw new IllegalArgumentException(
-                    "El campo supera el largo permitido: " + campo
-            );
-        }
-    }
 }
