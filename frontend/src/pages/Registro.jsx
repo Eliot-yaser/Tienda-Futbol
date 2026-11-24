@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { inicializarUsuarios } from "../utils/usuarios";
 import "./Registro.css";
 import "./RegistroOriginal.css";
+
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 const regionesYComunas = [
   {
@@ -92,19 +93,12 @@ function validarRunChileno(valor) {
   return digito === digitoEsperado;
 }
 
-// Dominios permitidos en el registro original
+// La API admite correos validos, sin limitar el dominio.
 function validarCorreo(correo) {
-  const dominios = ["@duoc.cl", "@profesor.duoc.cl", "@gmail.com"];
-
-  const correoLimpio = correo.trim().toLowerCase();
-
-  return (
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correoLimpio) &&
-    dominios.some((dominio) => correoLimpio.endsWith(dominio))
-  );
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo.trim());
 }
 
-function Registro({ onRegistro }) {
+function Registro() {
   const navigate = useNavigate();
 
   const [formulario, setFormulario] = useState(formularioInicial);
@@ -113,6 +107,7 @@ function Registro({ onRegistro }) {
   const [mensaje, setMensaje] = useState("");
   const [errorGeneral, setErrorGeneral] = useState("");
   const [registroExitoso, setRegistroExitoso] = useState(false);
+  const [enviando, setEnviando] = useState(false);
 
   const comunasDisponibles =
     regionesYComunas.find((item) => item.region === formulario.region)
@@ -123,7 +118,7 @@ function Registro({ onRegistro }) {
     if (!registroExitoso) return;
 
     const temporizador = setTimeout(() => {
-      navigate("/", { replace: true });
+      navigate("/login", { replace: true });
     }, 1500);
 
     return () => clearTimeout(temporizador);
@@ -146,10 +141,10 @@ function Registro({ onRegistro }) {
     setErrorGeneral("");
   };
 
-  const validarRegistro = (e) => {
+  const validarRegistro = async (e) => {
     e.preventDefault();
 
-    if (registroExitoso) return;
+    if (registroExitoso || enviando) return;
 
     const nuevosErrores = {};
 
@@ -179,9 +174,7 @@ function Registro({ onRegistro }) {
     if (!email) {
       nuevosErrores.email = "El correo electrónico es obligatorio.";
     } else if (!validarCorreo(email)) {
-      nuevosErrores.email =
-        "Solo se permiten correos @duoc.cl, " +
-        "@profesor.duoc.cl y @gmail.com.";
+      nuevosErrores.email = "Ingresa un correo electronico valido.";
     }
 
     // Fecha de nacimiento opcional
@@ -207,8 +200,8 @@ function Registro({ onRegistro }) {
     }
 
     // Validar contraseña
-    if (formulario.pass.length < 4 || formulario.pass.length > 10) {
-      nuevosErrores.pass = "La contraseña debe tener entre 4 y 10 caracteres.";
+    if (formulario.pass.length < 8) {
+      nuevosErrores.pass = "La contraseña debe tener al menos 8 caracteres.";
     }
 
     if (formulario.pass !== formulario.passConfirm) {
@@ -223,92 +216,62 @@ function Registro({ onRegistro }) {
       return;
     }
 
+    setEnviando(true);
+
     try {
-      // Asegurar que existan las cuentas fijas
-      inicializarUsuarios();
-
-      const datos = localStorage.getItem("usuariosRegistrados");
-
-      const usuarios = datos ? JSON.parse(datos) : [];
-
-      if (!Array.isArray(usuarios)) {
-        throw new Error("Lista de usuarios inválida.");
-      }
-
-      // Evitar correo duplicado
-      const existeCorreo = usuarios.some(
-        (usuario) =>
-          String(usuario.email || usuario.correo || "")
-            .trim()
-            .toLowerCase() === email,
-      );
-
-      if (existeCorreo) {
-        setErrores({
-          email: "Este correo ya está registrado.",
-        });
-        return;
-      }
-
-      // Evitar RUN duplicado
-      const existeRun = usuarios.some((usuario) => {
-        const runGuardado = String(usuario.run || usuario.rut || "")
-          .toUpperCase()
-          .replace(/[^0-9K]/g, "");
-
-        return runGuardado === run;
+      // Solo enviar campos que admite RegistroRequest.java.
+      // El RUN, fecha de nacimiento y direccion aun NO se guardan en MySQL.
+      const respuesta = await fetch(`${API_BASE}/api/v1/auth/registro`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nombre,
+          apellidos,
+          email,
+          password: formulario.pass,
+        }),
       });
 
-      if (existeRun) {
-        setErrores({
-          run: "Este RUN ya está registrado.",
-        });
-        return;
+      const datos = await respuesta.json().catch(() => null);
+
+      if (!respuesta.ok) {
+        const mensajeServidor =
+          typeof datos?.message === "string" ? datos.message :
+          typeof datos?.detail === "string" ? datos.detail : null;
+
+        if (
+          respuesta.status === 409 ||
+          (mensajeServidor && /correo.*registrado/i.test(mensajeServidor))
+        ) {
+          setErrores((anterior) => ({
+            ...anterior,
+            email: "Este correo ya esta registrado.",
+          }));
+          return;
+        }
+
+        throw new Error(
+          mensajeServidor ||
+            `No fue posible registrar la cuenta (HTTP ${respuesta.status}).`
+        );
       }
 
-      // Todos los registros públicos son clientes
-      const nuevoUsuario = {
-        run,
-        nombre,
-        apellidos,
-        email,
-        fechaNac: formulario.fechaNac,
-        region: formulario.region,
-        comuna: formulario.comuna,
-        direccion,
-        pass: formulario.pass,
-        rol: "Cliente",
-      };
-
-      // Guardar cuenta
-      localStorage.setItem(
-        "usuariosRegistrados",
-        JSON.stringify([...usuarios, nuevoUsuario]),
-      );
-
-      // Crear sesión de cliente
-      const usuarioSesion = {
-        nombre,
-        apellidos,
-        email,
-        rol: "Cliente",
-      };
-
-      localStorage.setItem("usuarioLogueado", JSON.stringify(usuarioSesion));
-
-      // Sincronizar la sesión y el carrito con App.jsx
-      onRegistro?.(usuarioSesion);
-
+      // No crear una sesion falsa: el endpoint de registro NO entrega JWT.
+      // En el siguiente paso conectaremos Login.jsx con /auth/login.
       setMensaje(
-        `¡Cuenta de ${nombre} creada correctamente! ` +
-          "Ingresando a la tienda...",
+        `¡Cuenta de ${nombre} registrada en MySQL! ` +
+          "Ahora inicia sesion con tu correo y contraseña."
       );
-
       setRegistroExitoso(true);
     } catch (error) {
       console.error("Error al registrar:", error);
-
-      setErrorGeneral("No fue posible crear la cuenta. Intenta nuevamente.");
+      setErrorGeneral(
+        error instanceof Error
+          ? error.message
+          : "No fue posible crear la cuenta. Intenta nuevamente."
+      );
+    } finally {
+      setEnviando(false);
     }
   };
 
@@ -426,7 +389,7 @@ function Registro({ onRegistro }) {
 
           {campo(
             "pass",
-            "CONTRASEÑA (4 A 10 CARACTERES) *",
+            "CONTRASEÑA (MÍNIMO 8 CARACTERES) *",
             "••••••••",
             "password",
           )}
@@ -453,9 +416,9 @@ function Registro({ onRegistro }) {
           <button
             type="submit"
             className="registro-original-boton"
-            disabled={registroExitoso}
+            disabled={registroExitoso || enviando}
           >
-            CREAR CUENTA
+            {enviando ? "REGISTRANDO..." : "CREAR CUENTA"}
           </button>
         </form>
       </div>

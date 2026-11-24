@@ -1,118 +1,56 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useProductos } from "../hooks/useProductos.js";
-import { cargarInventario } from "../utils/inventario";
-import { obtenerTallasPorCategoria } from "../utils/tallas";
+import { obtenerResumenDashboard } from "../utils/dashboardApi.js";
 
-// Recuperar el historial de ventas
-function cargarVentas() {
-  try {
-    const datos = localStorage.getItem("rey-balon-ventas");
-    const ventas = datos ? JSON.parse(datos) : [];
-
-    return Array.isArray(ventas) ? ventas : [];
-  } catch {
-    return [];
-  }
-}
-
-/* Contar los usuarios registrados */
-function cargarCantidadUsuarios() {
-  try {
-    const datos = localStorage.getItem("usuariosRegistrados");
-    const usuarios = datos ? JSON.parse(datos) : [];
-
-    return Array.isArray(usuarios) ? usuarios.length : 0;
-  } catch {
-    return 0;
-  }
-}
-
-// Mostrar los precios en pesos chilenos
+// Los indicadores, ventas y alertas provienen del backend MySQL.
 function formatearPrecio(valor) {
   return `$${Number(valor || 0).toLocaleString("es-CL")}`;
 }
 
-// Obtener el stock total vigente de un producto
-function obtenerStockTotal(producto, inventario) {
-  return (
-    inventario[producto.codigo]?._stockTotal ??
-    producto.stock
-  );
-}
-
-// Detectar productos o tallas con stock crítico
-function obtenerAlertas(inventario, productosBase) {
-  const alertas = [];
-
-  productosBase.forEach((producto) => {
-    const datos = inventario[producto.codigo] ?? {};
-    const tallas = obtenerTallasPorCategoria(
-      producto.categoria
-    );
-
-    const tallasConfiguradas = tallas.filter(
-      (talla) =>
-        Number.isSafeInteger(datos[talla]) &&
-        datos[talla] >= 0
-    );
-
-    // Revisar cada talla que tenga inventario configurado
-    if (tallasConfiguradas.length > 0) {
-      tallasConfiguradas.forEach((talla) => {
-        if (datos[talla] <= producto.stockCritico) {
-          alertas.push({
-            codigo: producto.codigo,
-            nombre: producto.nombre,
-            talla,
-            stock: datos[talla],
-            limite: producto.stockCritico,
-          });
-        }
-      });
-
-      return;
-    }
-
-    // Productos de talla única o sin desglose configurado
-    const stockTotal = obtenerStockTotal(
-      producto,
-      inventario
-    );
-
-    if (
-      Number.isSafeInteger(stockTotal) &&
-      stockTotal <= producto.stockCritico
-    ) {
-      alertas.push({
-        codigo: producto.codigo,
-        nombre: producto.nombre,
-        talla: "Total",
-        stock: stockTotal,
-        limite: producto.stockCritico,
-      });
-    }
-  });
-
-  return alertas;
-}
-
-function AdminDashboard() {
+function AdminDashboard({ usuario }) {
+  // El token procede del login JWT gestionado por App.jsx.
+  const token = usuario?.token;
   const productosBase = useProductos();
-  const [inventario] = useState(cargarInventario);
-  const [ventas] = useState(cargarVentas);
-  const [totalUsuarios] = useState(cargarCantidadUsuarios);
+  const [resumen, setResumen] = useState(null);
+  const [estado, setEstado] = useState("cargando");
+  const [error, setError] = useState("");
+  const [intento, setIntento] = useState(0);
+  const [seccionAbierta, setSeccionAbierta] = useState(null);
 
-  // Controlar cuál sección está desplegada
-  const [seccionAbierta, setSeccionAbierta] =
-    useState(null);
+  useEffect(() => {
+    const controlador = new AbortController();
 
-  const alertas = obtenerAlertas(inventario, productosBase);
+    if (!token) {
+      setResumen(null);
+      setEstado("error");
+      setError("No hay una sesión JWT válida. Cierra sesión e inicia nuevamente.");
+      return () => controlador.abort();
+    }
 
-  const ingresosTotales = ventas.reduce(
-    (total, venta) => total + Number(venta.total || 0),
-    0
-  );
+    setEstado("cargando");
+    setError("");
+
+    obtenerResumenDashboard(token, controlador.signal)
+      .then((datos) => {
+        if (controlador.signal.aborted) return;
+        setResumen(datos);
+        setEstado("listo");
+      })
+      .catch((fallo) => {
+        if (controlador.signal.aborted) return;
+        setResumen(null);
+        setEstado("error");
+        setError(fallo.message || "No se pudo consultar el dashboard.");
+      });
+
+    return () => controlador.abort();
+  }, [token, intento]);
+
+  const alertas = resumen?.alertas ?? [];
+  const ingresosTotales = resumen?.ingresosTotales ?? 0;
+  const totalVentas = resumen?.ventasRealizadas ?? 0;
+  const mostrarValor = (valor) => estado === "listo" ? valor : "—";
 
   const abrirSeccion = (seccion) => {
     setSeccionAbierta((actual) =>
@@ -124,7 +62,7 @@ function AdminDashboard() {
     {
       id: "productos",
       nombre: "Productos registrados",
-      valor: productosBase.length,
+      valor: mostrarValor(resumen?.productosRegistrados),
       icono: "📦",
       color: "#1769e9",
       texto: "#ffffff",
@@ -132,7 +70,7 @@ function AdminDashboard() {
     {
       id: "alertas",
       nombre: "Alertas de stock crítico",
-      valor: alertas.length,
+      valor: mostrarValor(resumen?.alertasStockCritico),
       icono: "⚠️",
       color: "#f3b500",
       texto: "#332500",
@@ -140,7 +78,7 @@ function AdminDashboard() {
     {
       id: "usuarios",
       nombre: "Usuarios registrados",
-      valor: totalUsuarios,
+      valor: mostrarValor(resumen?.usuariosRegistrados),
       icono: "👥",
       color: "#188553",
       texto: "#ffffff",
@@ -148,7 +86,7 @@ function AdminDashboard() {
     {
       id: "ventas",
       nombre: "Ventas realizadas",
-      valor: ventas.length,
+      valor: mostrarValor(resumen?.ventasRealizadas),
       icono: "🧾",
       color: "#7040b9",
       texto: "#ffffff",
@@ -166,6 +104,25 @@ function AdminDashboard() {
           Bienvenido al panel administrativo de Rey del Balón.
         </p>
       </div>
+
+      {estado === "cargando" && (
+        <div className="alert alert-info" role="status">
+          Consultando las estadísticas del servidor...
+        </div>
+      )}
+
+      {estado === "error" && (
+        <div className="alert alert-danger" role="alert">
+          <p className="mb-2">{error}</p>
+          <button
+            type="button"
+            className="btn btn-outline-danger btn-sm"
+            onClick={() => setIntento((n) => n + 1)}
+          >
+            Reintentar
+          </button>
+        </div>
+      )}
 
       {/* Indicadores principales */}
       <div className="row g-3 mb-4">
@@ -241,10 +198,7 @@ function AdminDashboard() {
                       <td>{producto.nombre}</td>
                       <td>{producto.categoria}</td>
                       <td>
-                        {obtenerStockTotal(
-                          producto,
-                          inventario
-                        )}
+                        {producto.stock ?? "—"}
                       </td>
                     </tr>
                   ))}
@@ -275,7 +229,11 @@ function AdminDashboard() {
               ⚠️ Alertas de inventario
             </h2>
 
-            {alertas.length === 0 ? (
+            {estado !== "listo" ? (
+              <p className="text-secondary">
+                No hay datos de inventario disponibles. Comprueba la conexión.
+              </p>
+            ) : alertas.length === 0 ? (
               <div className="alert alert-success">
                 No se detectaron existencias bajo el
                 límite crítico configurado.
@@ -365,12 +323,12 @@ function AdminDashboard() {
 
             <p>
               <strong>Ventas registradas:</strong>{" "}
-              {ventas.length}
+              {mostrarValor(totalVentas)}
             </p>
 
             <p>
               <strong>Ingresos simulados:</strong>{" "}
-              {formatearPrecio(ingresosTotales)}
+              {estado === "listo" ? formatearPrecio(ingresosTotales) : "—"}
             </p>
 
             <Link
@@ -426,8 +384,9 @@ function AdminDashboard() {
       </section>
 
       <p className="text-secondary small mt-4">
-        Panel de demostración. Los datos de ventas e
-        inventario están guardados en este navegador.
+        Indicadores y alertas consultados desde MySQL mediante la API.
+        Los módulos de usuarios, historial de ventas e inventario
+        son pantallas independientes pendientes de revisión.
       </p>
     </main>
   );

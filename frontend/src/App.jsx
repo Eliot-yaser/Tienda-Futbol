@@ -516,7 +516,7 @@ function App() {
           path="/admin/usuarios"
           element={
             <RutaProtegida usuario={usuario} rolPermitido="Administrador">
-              <AdminUsuarios />
+              <AdminUsuarios usuario={usuario} />
             </RutaProtegida>
           }
         />
@@ -525,7 +525,7 @@ function App() {
           path="/admin/inventario"
           element={
             <RutaProtegida usuario={usuario} rolPermitido="Administrador">
-              <AdminInventario />
+              <AdminInventario usuario={usuario} />
             </RutaProtegida>
           }
         />
@@ -533,7 +533,7 @@ function App() {
           path="/admin/ventas"
           element={
             <RutaProtegida usuario={usuario} rolPermitido="Administrador">
-              <AdminVentas />
+              <AdminVentas usuario={usuario} />
             </RutaProtegida>
           }
         />
@@ -541,7 +541,7 @@ function App() {
           path="/admin"
           element={
             <RutaProtegida usuario={usuario} rolPermitido="Administrador">
-              <AdminDashboard />
+              <AdminDashboard usuario={usuario} />
             </RutaProtegida>
           }
         />

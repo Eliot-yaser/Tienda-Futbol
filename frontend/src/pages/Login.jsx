@@ -1,7 +1,10 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { inicializarUsuarios } from "../utils/usuarios";
 import "./Registro.css";
+
+const API_BASE =
+  import.meta.env.VITE_API_URL || "http://localhost:8080";
 
 function Login({ onLogin }) {
   const navigate = useNavigate();
@@ -10,25 +13,25 @@ function Login({ onLogin }) {
   const [password, setPassword] = useState("");
   const [errores, setErrores] = useState({});
   const [mensaje, setMensaje] = useState("");
+  const [cargando, setCargando] = useState(false);
 
-  // Validar los datos e iniciar sesión
-  const validarLogin = (e) => {
+  const validarLogin = async (e) => {
     e.preventDefault();
 
+    if (cargando) return;
+
     const nuevosErrores = {};
+    const correoLimpio = correo.trim().toLowerCase();
     const formatoCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    const correoLimpio = correo.trim().toLowerCase();
-
-    // Validar correo
     if (!formatoCorreo.test(correoLimpio)) {
-      nuevosErrores.correo = "Ingresa un correo electrónico válido.";
+      nuevosErrores.correo =
+        "Ingresa un correo electrónico válido.";
     }
 
-    // Validar contraseña
-    if (password.length < 4 || password.length > 10) {
+    if (!password) {
       nuevosErrores.password =
-        "La contraseña debe tener entre 4 y 10 caracteres.";
+        "Ingresa tu contraseña.";
     }
 
     setErrores(nuevosErrores);
@@ -38,88 +41,141 @@ function Login({ onLogin }) {
       return;
     }
 
+    setCargando(true);
+
     try {
-      // Crear las cuentas de prueba que todavía no existan
-      inicializarUsuarios();
+      const respuesta = await fetch(
+        `${API_BASE}/api/v1/auth/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: correoLimpio,
+            password,
+          }),
+        }
+      );
 
-      // Obtener usuarios guardados
-      const datos = localStorage.getItem("usuariosRegistrados");
+      const datos = await respuesta.json().catch(() => null);
 
-      const usuarios = datos ? JSON.parse(datos) : [];
-
-      if (!Array.isArray(usuarios)) {
-        throw new Error("La lista de usuarios no es válida.");
-      }
-
-      // Buscar correo y contraseña
-      const usuarioEncontrado = usuarios.find((usuario) => {
-        const emailUsuario = String(usuario.email || usuario.correo || "")
-          .trim()
-          .toLowerCase();
-
-        const passwordUsuario = String(usuario.pass ?? usuario.password ?? "");
-
-        return emailUsuario === correoLimpio && passwordUsuario === password;
-      });
-
-      // Si no existe o la contraseña es incorrecta
-      if (!usuarioEncontrado) {
-        setErrores({
-          correo: "El correo o la contraseña son incorrectos.",
-        });
-
+      if (!respuesta.ok) {
+        if (respuesta.status === 400 ||
+            respuesta.status === 401 ||
+            respuesta.status === 403) {
+          setMensaje(
+            "Correo o contraseña incorrectos, o cuenta inactiva."
+          );
+        } else {
+          setMensaje(
+            "No fue posible iniciar sesión. Intenta nuevamente."
+          );
+        }
         return;
       }
 
-      // Guardar solamente los datos necesarios para la sesión
-      const usuarioSesion = {
-        nombre: usuarioEncontrado.nombre,
-        apellidos: usuarioEncontrado.apellidos || "",
-        email: correoLimpio,
-        rol: usuarioEncontrado.rol || "Cliente",
+      if (
+        !datos ||
+        typeof datos.token !== "string" ||
+        !datos.token ||
+        typeof datos.rol !== "string" ||
+        !datos.email
+      ) {
+        throw new Error("Respuesta de autenticación incompleta.");
+      }
+
+      // Convertir el rol del backend al formato
+      // que utilizan las páginas actuales de React.
+      const rolBackend = datos.rol.toUpperCase();
+
+      const rolesFrontend = {
+        ADMINISTRADOR: "Administrador",
+        VENDEDOR: "Vendedor",
+        CLIENTE: "Cliente",
       };
 
-      localStorage.setItem("usuarioLogueado", JSON.stringify(usuarioSesion));
-      // Avisar a React que cambió el usuario conectado
-      onLogin(usuarioSesion);
+      const rolFrontend = rolesFrontend[rolBackend];
 
-      // Redirigir según el rol
-      if (usuarioSesion.rol === "Administrador") {
+      if (!rolFrontend) {
+        throw new Error("Rol de usuario no reconocido.");
+      }
+
+      // Mantener la estructura que utiliza App.jsx.
+      const usuarioSesion = {
+        idUsuario: datos.idUsuario,
+        nombre: datos.nombre,
+        apellidos: "",
+        email: datos.email,
+        rol: rolFrontend,
+        token: datos.token,
+        tipo: datos.tipo || "Bearer",
+      };
+
+      // Compatibilidad temporal con el sistema
+      // de sesiones existente de la EVA3.
+      localStorage.setItem(
+        "usuarioLogueado",
+        JSON.stringify(usuarioSesion)
+      );
+
+      // Notificar a App.jsx.
+      onLogin?.(usuarioSesion);
+
+      // Redirigir según rol.
+      if (rolBackend === "ADMINISTRADOR") {
         navigate("/admin", { replace: true });
-      } else if (usuarioSesion.rol === "Vendedor") {
+      } else if (rolBackend === "VENDEDOR") {
         navigate("/vendedor", { replace: true });
       } else {
         navigate("/", { replace: true });
       }
+
     } catch (error) {
       console.error("Error al iniciar sesión:", error);
 
-      setMensaje("No fue posible iniciar sesión. Intenta nuevamente.");
+      setMensaje(
+        "No fue posible conectar con el servidor de autenticación."
+      );
+    } finally {
+      setCargando(false);
     }
   };
 
   return (
     <main className="registro-pagina">
-      <form className="registro-tarjeta" onSubmit={validarLogin} noValidate>
-        <h1 className="registro-titulo">¡Hola de nuevo!</h1>
+      <form
+        className="registro-tarjeta"
+        onSubmit={validarLogin}
+        noValidate
+      >
+        <h1 className="registro-titulo">
+          ¡Hola de nuevo!
+        </h1>
 
         <p className="text-secondary text-center mb-4">
           Ingresa a tu cuenta para continuar.
         </p>
 
-        {/* Correo electrónico */}
         <div className="mb-3">
-          <label htmlFor="login-correo" className="form-label">
+          <label
+            htmlFor="login-correo"
+            className="form-label"
+          >
             Correo Electrónico *
           </label>
 
           <input
             id="login-correo"
             type="email"
-            className={`form-control ${errores.correo ? "is-invalid" : ""}`}
-            maxLength={100}
+            className={`form-control ${
+              errores.correo ? "is-invalid" : ""
+            }`}
+            maxLength={150}
             placeholder="ejemplo@duoc.cl"
             value={correo}
+            autoComplete="email"
+            disabled={cargando}
             onChange={(e) => {
               setCorreo(e.target.value);
               setErrores((anterior) => ({
@@ -131,25 +187,33 @@ function Login({ onLogin }) {
           />
 
           {errores.correo && (
-            <div className="invalid-feedback" role="alert">
+            <div
+              className="invalid-feedback"
+              role="alert"
+            >
               {errores.correo}
             </div>
           )}
         </div>
 
-        {/* Contraseña */}
         <div className="mb-3">
-          <label htmlFor="login-password" className="form-label">
+          <label
+            htmlFor="login-password"
+            className="form-label"
+          >
             Contraseña *
           </label>
 
           <input
             id="login-password"
             type="password"
-            className={`form-control ${errores.password ? "is-invalid" : ""}`}
-            maxLength={10}
+            className={`form-control ${
+              errores.password ? "is-invalid" : ""
+            }`}
             placeholder="••••••••"
             value={password}
+            autoComplete="current-password"
+            disabled={cargando}
             onChange={(e) => {
               setPassword(e.target.value);
               setErrores((anterior) => ({
@@ -161,20 +225,28 @@ function Login({ onLogin }) {
           />
 
           {errores.password && (
-            <div className="invalid-feedback" role="alert">
+            <div
+              className="invalid-feedback"
+              role="alert"
+            >
               {errores.password}
             </div>
           )}
         </div>
 
-        {/* Botón de ingreso */}
-        <button type="submit" className="registro-boton">
-          INGRESAR
+        <button
+          type="submit"
+          className="registro-boton"
+          disabled={cargando}
+        >
+          {cargando ? "INGRESANDO..." : "INGRESAR"}
         </button>
 
-        {/* Mensaje de error general */}
         {mensaje && (
-          <div className="alert alert-danger mt-3" role="alert">
+          <div
+            className="alert alert-danger mt-3"
+            role="alert"
+          >
             {mensaje}
           </div>
         )}
@@ -183,7 +255,6 @@ function Login({ onLogin }) {
           Recuperación de contraseña no disponible por ahora.
         </p>
 
-        {/* Enlace al registro */}
         <p className="text-center mt-4 mb-0">
           ¿No tienes una cuenta?{" "}
           <Link

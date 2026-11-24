@@ -82,6 +82,33 @@ public class SecurityConfig {
                                                                 "/api/v1/admin/productos/**")
                                                 .hasRole("ADMINISTRADOR")
 
+                                                // Permitir consultar el dashboard solo a administradores
+                                                .requestMatchers(
+                                                                HttpMethod.GET,
+                                                                "/api/v1/admin/dashboard/resumen")
+                                                .hasRole("ADMINISTRADOR")
+
+                                                // Permitir consultar el historial de ventas
+                                                // exclusivamente a administradores
+                                                .requestMatchers(
+                                                                HttpMethod.GET,
+                                                                "/api/v1/admin/ventas")
+                                                .hasRole("ADMINISTRADOR")
+
+                                                // Permitir consultar los usuarios registrados
+                                                // exclusivamente a administradores
+                                                .requestMatchers(
+                                                                HttpMethod.GET,
+                                                                "/api/v1/admin/usuarios")
+                                                .hasRole("ADMINISTRADOR")
+
+                                                // Proteger todas las operaciones del inventario
+                                                // Solo administradores: consultar, modificar y reponer
+                                                .requestMatchers(
+                                                                "/api/v1/admin/inventario/**")
+                                                .hasRole("ADMINISTRADOR")
+
+
                                                 .requestMatchers(HttpMethod.POST, "/api/v1/compras").authenticated()
 
                                                 .requestMatchers("/error").permitAll()
