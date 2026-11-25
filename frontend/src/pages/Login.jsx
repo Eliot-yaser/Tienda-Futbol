@@ -62,8 +62,8 @@ function Login({ onLogin }) {
 
       if (!respuesta.ok) {
         if (respuesta.status === 400 ||
-            respuesta.status === 401 ||
-            respuesta.status === 403) {
+          respuesta.status === 401 ||
+          respuesta.status === 403) {
           setMensaje(
             "Correo o contraseña incorrectos, o cuenta inactiva."
           );
@@ -109,8 +109,10 @@ function Login({ onLogin }) {
         email: datos.email,
         rol: rolFrontend,
         token: datos.token,
+        refreshToken: datos.refreshToken,
         tipo: datos.tipo || "Bearer",
       };
+
 
       // Compatibilidad temporal con el sistema
       // de sesiones existente de la EVA3.
@@ -168,9 +170,8 @@ function Login({ onLogin }) {
           <input
             id="login-correo"
             type="email"
-            className={`form-control ${
-              errores.correo ? "is-invalid" : ""
-            }`}
+            className={`form-control ${errores.correo ? "is-invalid" : ""
+              }`}
             maxLength={150}
             placeholder="ejemplo@duoc.cl"
             value={correo}
@@ -207,9 +208,8 @@ function Login({ onLogin }) {
           <input
             id="login-password"
             type="password"
-            className={`form-control ${
-              errores.password ? "is-invalid" : ""
-            }`}
+            className={`form-control ${errores.password ? "is-invalid" : ""
+              }`}
             placeholder="••••••••"
             value={password}
             autoComplete="current-password"

@@ -6,11 +6,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.security.config.http.SessionCreationPolicy;
 
 import cl.reydelbalon.backend.entity.Usuario;
 import cl.reydelbalon.backend.repository.UsuarioRepository;
@@ -26,153 +26,218 @@ import java.util.List;
 @Configuration
 public class SecurityConfig {
 
-        @Bean
+    @Bean
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            UsuarioRepository usuarioRepository) throws Exception {
 
-        public SecurityFilterChain securityFilterChain(
-                        HttpSecurity http,
-                        UsuarioRepository usuarioRepository) throws Exception {
+        http
+                .cors(cors -> cors
+                        .configurationSource(corsConfigurationSource()))
 
-                http
-                                .cors(cors -> cors
-                                                .configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/api/**"))
 
-                                .csrf(csrf -> csrf
-                                                .ignoringRequestMatchers("/api/**"))
-                                .sessionManagement(session -> session
-                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                                .oauth2ResourceServer(oauth2 -> oauth2
-                                                .jwt(jwt -> jwt
-                                                                .jwtAuthenticationConverter(jwtAuthenticationConverter(
-                                                                                usuarioRepository))))
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwt -> jwt
+                                .jwtAuthenticationConverter(
+                                        jwtAuthenticationConverter(usuarioRepository))))
 
-                                .authorizeHttpRequests(auth -> auth
+                .authorizeHttpRequests(auth -> auth
 
-                                                // Permitir consultas publicas del catalogo
-                                                .requestMatchers(
-                                                                HttpMethod.GET,
-                                                                "/api/v1/productos",
-                                                                "/api/v1/productos/**",
-                                                                "/api/v1/categorias",
-                                                                "/api/v1/categorias/**")
-                                                .permitAll()
+                        // =====================================================
+                        // 1. CATALOGO PUBLICO
+                        // =====================================================
+                        // Permitir consultar productos y categorias sin iniciar sesion.
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/v1/productos",
+                                "/api/v1/productos/**",
+                                "/api/v1/categorias",
+                                "/api/v1/categorias/**")
+                        .permitAll()
 
-                                                // Permitir registro e inicio de sesion
-                                                .requestMatchers(
-                                                                HttpMethod.POST,
-                                                                "/api/v1/auth/registro",
-                                                                "/api/v1/auth/login",
-                                                                "/api/v1/auth/refresh")
-                                                .permitAll()
+                        // =====================================================
+                        // 2. AUTENTICACION
+                        // =====================================================
+                        // Permitir registro, login y renovacion de JWT.
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/v1/auth/registro",
+                                "/api/v1/auth/login",
+                                "/api/v1/auth/refresh")
+                        .permitAll()
 
-                                                // Permitir consultar el usuario autenticado
-                                                .requestMatchers(
-                                                                HttpMethod.GET,
-                                                                "/api/v1/auth/me")
-                                                .authenticated()
+                        // Consultar datos del usuario autenticado.
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/v1/auth/me")
+                        .authenticated()
 
-                                                // Permitir acceso solo a administradores
-                                                .requestMatchers(
-                                                                HttpMethod.GET,
-                                                                "/api/v1/admin/verificar")
-                                                .hasRole("ADMINISTRADOR")
+                        // =====================================================
+                        // 3. VERIFICACION ADMINISTRATIVA
+                        // =====================================================
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/v1/admin/verificar")
+                        .hasRole("ADMINISTRADOR")
 
-                                                // Proteger todas las operaciones del CRUD administrativo
-                                                .requestMatchers("/api/v1/admin/productos",
-                                                                "/api/v1/admin/productos/**")
-                                                .hasRole("ADMINISTRADOR")
+                        // =====================================================
+                        // 4. CRUD ADMINISTRATIVO DE PRODUCTOS
+                        // =====================================================
+                        // Solo ADMINISTRADOR puede crear, modificar,
+                        // eliminar y gestionar productos.
+                        .requestMatchers(
+                                "/api/v1/admin/productos",
+                                "/api/v1/admin/productos/**")
+                        .hasRole("ADMINISTRADOR")
 
-                                                // Permitir consultar el dashboard solo a administradores
-                                                .requestMatchers(
-                                                                HttpMethod.GET,
-                                                                "/api/v1/admin/dashboard/resumen")
-                                                .hasRole("ADMINISTRADOR")
+                        // =====================================================
+                        // 5. DASHBOARD ADMINISTRATIVO
+                        // =====================================================
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/v1/admin/dashboard/resumen")
+                        .hasRole("ADMINISTRADOR")
 
-                                                // Permitir consultar el historial de ventas
-                                                // exclusivamente a administradores
-                                                .requestMatchers(
-                                                                HttpMethod.GET,
-                                                                "/api/v1/admin/ventas")
-                                                .hasRole("ADMINISTRADOR")
+                        // =====================================================
+                        // 6. CONSULTA DE VENTAS Y PEDIDOS
+                        // =====================================================
+                        // ADMINISTRADOR y VENDEDOR pueden consultar ventas.
+                        // No se habilitan operaciones de modificacion.
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/v1/admin/ventas")
+                        .hasAnyRole("ADMINISTRADOR", "VENDEDOR")
 
-                                                // Permitir consultar los usuarios registrados
-                                                // exclusivamente a administradores
-                                                .requestMatchers(
-                                                                HttpMethod.GET,
-                                                                "/api/v1/admin/usuarios")
-                                                .hasRole("ADMINISTRADOR")
+                        // =====================================================
+                        // 7. ADMINISTRACION DE USUARIOS
+                        // =====================================================
+                        // Solo ADMINISTRADOR puede consultar los usuarios.
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/v1/admin/usuarios")
+                        .hasRole("ADMINISTRADOR")
 
-                                                // Proteger todas las operaciones del inventario
-                                                // Solo administradores: consultar, modificar y reponer
-                                                .requestMatchers(
-                                                                "/api/v1/admin/inventario/**")
-                                                .hasRole("ADMINISTRADOR")
+                        // =====================================================
+                        // 8. INVENTARIO ADMINISTRATIVO
+                        // =====================================================
+                        // Solo ADMINISTRADOR puede consultar, modificar
+                        // y reponer inventario desde endpoints administrativos.
+                        .requestMatchers(
+                                "/api/v1/admin/inventario/**")
+                        .hasRole("ADMINISTRADOR")
 
+                        // =====================================================
+                        // 9. REGISTRO DE COMPRAS - EVA3
+                        // =====================================================
+                        // CLIENTE: puede registrar compras.
+                        // ADMINISTRADOR: conserva acceso total.
+                        // VENDEDOR: no puede registrar compras.
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/v1/compras")
+                        .hasAnyRole("CLIENTE", "ADMINISTRADOR")
 
-                                                .requestMatchers(HttpMethod.POST, "/api/v1/compras").authenticated()
+                        // =====================================================
+                        // 10. MANEJO DE ERRORES
+                        // =====================================================
+                        .requestMatchers("/error")
+                        .permitAll()
 
-                                                .requestMatchers("/error").permitAll()
+                        // =====================================================
+                        // 11. SWAGGER Y OPENAPI
+                        // =====================================================
+                        // Mantener disponible la documentacion REST.
+                        // Los endpoints protegidos siguen requiriendo JWT.
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs",
+                                "/v3/api-docs/**")
+                        .permitAll()
 
-                                                // Bloquear los demas accesos temporalmente
-                                                .anyRequest().denyAll());
+                        // =====================================================
+                        // 12. DENEGAR ACCESOS NO AUTORIZADOS
+                        // =====================================================
+                        .anyRequest()
+                        .denyAll());
 
-                return http.build();
-        }
+        return http.build();
+    }
 
-        @Bean
+    // =========================================================
+    // CONVERTIR JWT A ROLES DESDE MYSQL
+    // =========================================================
+    @Bean
+    public JwtAuthenticationConverter jwtAuthenticationConverter(
+            UsuarioRepository usuarioRepository) {
 
-        public JwtAuthenticationConverter jwtAuthenticationConverter(
-                        UsuarioRepository usuarioRepository) {
+        JwtAuthenticationConverter converter =
+                new JwtAuthenticationConverter();
 
-                JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
 
-                converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            String email = jwt.getSubject();
 
-                        String email = jwt.getSubject();
+            Usuario usuario = usuarioRepository.findByEmail(email)
+                    .orElseThrow(() ->
+                            new OAuth2AuthenticationException(
+                                    new OAuth2Error("invalid_token"),
+                                    "Usuario no encontrado"));
 
-                        Usuario usuario = usuarioRepository.findByEmail(email)
-                                        .orElseThrow(() -> new OAuth2AuthenticationException(
-                                                        new OAuth2Error("invalid_token"),
-                                                        "Usuario no encontrado"));
+            if (!Boolean.TRUE.equals(usuario.getActivo())) {
+                throw new OAuth2AuthenticationException(
+                        new OAuth2Error("invalid_token"),
+                        "Usuario inactivo");
+            }
 
-                        if (!Boolean.TRUE.equals(usuario.getActivo())) {
-                                throw new OAuth2AuthenticationException(
-                                                new OAuth2Error("invalid_token"),
-                                                "Usuario inactivo");
-                        }
+            return List.of(
+                    new SimpleGrantedAuthority(
+                            "ROLE_" + usuario.getRol().name()));
+        });
 
-                        return List.of(
-                                        new SimpleGrantedAuthority(
-                                                        "ROLE_" + usuario.getRol().name()));
-                });
+        return converter;
+    }
 
-                return converter;
-        }
+    // =========================================================
+    // CORS - FRONTEND REACT + VITE
+    // =========================================================
+    @Bean
+    public UrlBasedCorsConfigurationSource corsConfigurationSource() {
 
-        @Bean
-        public UrlBasedCorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuracion =
+                new CorsConfiguration();
 
-                CorsConfiguration configuracion = new CorsConfiguration();
+        // Origenes locales permitidos.
+        configuracion.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                "http://127.0.0.1:5173"));
 
-                // Origenes locales permitidos para React + Vite
-                configuracion.setAllowedOrigins(List.of(
-                                "http://localhost:5173",
-                                "http://127.0.0.1:5173"));
+        configuracion.setAllowedMethods(List.of(
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE",
+                "PATCH",
+                "OPTIONS"));
 
-                configuracion.setAllowedMethods(
-                                List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        configuracion.setAllowedHeaders(List.of(
+                "Content-Type",
+                "Accept",
+                "Authorization"));
 
-                configuracion.setAllowedHeaders(List.of(
-                                "Content-Type",
-                                "Accept",
-                                "Authorization"));
+        UrlBasedCorsConfigurationSource origen =
+                new UrlBasedCorsConfigurationSource();
 
-                UrlBasedCorsConfigurationSource origen = new UrlBasedCorsConfigurationSource();
+        origen.registerCorsConfiguration(
+                "/api/**",
+                configuracion);
 
-                origen.registerCorsConfiguration(
-                                "/api/**",
-                                configuracion);
-
-                return origen;
-        }
+        return origen;
+    }
 }

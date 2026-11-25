@@ -5,6 +5,9 @@ import cl.reydelbalon.backend.entity.Producto;
 import cl.reydelbalon.backend.service.ProductoService;
 import cl.reydelbalon.backend.controller.ProductoController.ProductoRespuesta;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
+
 import cl.reydelbalon.backend.dto.ProductoSolicitud;
 
 import org.springframework.http.HttpStatus;
@@ -16,6 +19,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/admin/productos")
+@SecurityRequirement(name = "bearerAuth")
+
 public class AdminProductoController {
 
     private final ProductoService productoService;

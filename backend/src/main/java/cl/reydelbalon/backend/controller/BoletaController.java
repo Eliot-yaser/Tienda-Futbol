@@ -11,8 +11,13 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
+
 @RestController
 @RequestMapping("/api/v1/compras")
+@SecurityRequirement(name = "bearerAuth")
+
 public class BoletaController {
 
     private final BoletaService boletaService;

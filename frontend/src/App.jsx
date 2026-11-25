@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
 
 // Componentes
 import Navbar from "./components/Navbar";
@@ -120,6 +120,7 @@ function RutaProtegida({ usuario, rolPermitido, children }) {
 
 function App() {
   const navigate = useNavigate();
+  const location = useLocation();
   const productos = useProductos();
   const validacionStockEnCurso = useRef(false);
 
@@ -132,6 +133,51 @@ function App() {
       return null;
     }
   });
+
+  // EVA3 - Sincronizar la sesión cuando se renueva el JWT.
+  useEffect(() => {
+    const actualizarSesion = (evento) => {
+      const sesionRenovada = evento.detail;
+
+      if (
+        !sesionRenovada?.token ||
+        !sesionRenovada?.refreshToken
+      ) {
+        return;
+      }
+
+      setUsuario((actual) => {
+        // Evitar actualizar una cuenta diferente.
+        if (
+          !actual ||
+          actual.idUsuario !== sesionRenovada.idUsuario ||
+          actual.email !== sesionRenovada.email
+        ) {
+          return actual;
+        }
+
+        return {
+          ...actual,
+          token: sesionRenovada.token,
+          refreshToken: sesionRenovada.refreshToken,
+          tipo: sesionRenovada.tipo || actual.tipo,
+        };
+      });
+    };
+
+    window.addEventListener(
+      "rey-balon-sesion-actualizada",
+      actualizarSesion
+    );
+
+    return () => {
+      window.removeEventListener(
+        "rey-balon-sesion-actualizada",
+        actualizarSesion
+      );
+    };
+  }, []);
+
 
   // Cerrar sesión conservando el carrito de esa cuenta
   const cerrarSesion = () => {
@@ -463,6 +509,13 @@ function App() {
           (producto) => producto.categoria === categoriaSeleccionada,
         );
 
+  // EVA3: el VENDEDOR solo puede acceder a su panel de consulta.
+  // Esto restringe las rutas React, incluso al escribir la URL directamente.
+  // La autorizacion real de las API sigue siendo responsabilidad de Spring Security.
+  if (usuario?.rol === "Vendedor" && location.pathname !== "/vendedor") {
+    return <Navigate to="/vendedor" replace />;
+  }
+
   return (
     <>
       {/* Barra de navegación */}
@@ -551,7 +604,7 @@ function App() {
           path="/vendedor"
           element={
             <RutaProtegida usuario={usuario} rolPermitido="Vendedor">
-              <VendedorDashboard />
+              <VendedorDashboard usuario={usuario} />
             </RutaProtegida>
           }
         />
